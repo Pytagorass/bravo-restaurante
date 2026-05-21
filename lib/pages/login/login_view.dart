@@ -144,14 +144,17 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   void dispose() {
+    // Libera os controllers quando a tela sair da memória.
     _emailController.dispose();
     _senhaController.dispose();
     super.dispose();
   }
 
   Future<void> _login() async {
+    // Interrompe o fluxo se algum campo obrigatório estiver inválido.
     if (!_formKey.currentState!.validate()) return;
 
+    // Fecha o teclado e bloqueia o botão enquanto a consulta ao banco acontece.
     FocusScope.of(context).unfocus();
     setState(() => _isLoading = true);
 
@@ -160,6 +163,7 @@ class _LoginViewState extends State<LoginView> {
     final senha = _senhaController.text.trim();
 
     try {
+      // Evita deixar a tela presa em "Entrando..." se o Supabase não responder.
       final sucesso = await usuarioVM
           .login(email: email, senha: senha)
           .timeout(const Duration(seconds: 12));
@@ -167,6 +171,7 @@ class _LoginViewState extends State<LoginView> {
       if (!mounted) return;
 
       if (sucesso) {
+        // Login validado: remove a tela de login da pilha e abre a Home.
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const HomeView()),
         );
@@ -178,6 +183,7 @@ class _LoginViewState extends State<LoginView> {
     } on TimeoutException {
       if (!mounted) return;
 
+      // Mensagem específica para falha de comunicação, diferente de senha errada.
       debugPrint('Login falhou: tempo limite na comunicacao com o banco.');
       _mostrarErro('Tempo limite ao conectar com o banco de dados.');
     } catch (e) {
@@ -186,6 +192,7 @@ class _LoginViewState extends State<LoginView> {
       debugPrint('Login falhou: $e');
       _mostrarErro('Erro ao realizar login. Tente novamente.');
     } finally {
+      // Garante que o botão volte ao estado normal em sucesso, erro ou timeout.
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -193,6 +200,7 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void _mostrarErro(String mensagem) {
+    // Centraliza a exibição de erros para manter o visual consistente.
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensagem, textAlign: TextAlign.center),
@@ -212,7 +220,7 @@ class _LoginViewState extends State<LoginView> {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              Image.asset('assets/LogoBravo.ico', height: 110),
+              Image.asset('assets/LogoBravo.png', height: 110),
 
               const SizedBox(height: 16),
 

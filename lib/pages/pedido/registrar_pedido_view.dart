@@ -4,8 +4,22 @@ import 'package:bravo_restaurante/models/reserva.dart';
 import 'package:bravo_restaurante/mvvm/pedido_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
+import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+List<ItemPedidoTemporario> itensPedido = [];
+
+// Soma os subtotais dos itens ainda não gravados no banco.
+double get totalPedido {
+  double total = 0;
+
+  for (final item in itensPedido) {
+    total += item.subtotal;
+  }
+
+  return total;
+}
 
 class RegistrarPedidoView extends StatefulWidget {
   const RegistrarPedidoView({super.key});
@@ -25,26 +39,14 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
   Reserva? reservaSelecionada;
   Produto? produtoSelecionado;
 
-  final List<ItemPedidoTemporario> itensPedido = [];
   int quantidade = 1;
-
-  double get totalPedido {
-    double total = 0;
-
-    for (final item in itensPedido) {
-      total += item.subtotal;
-    }
-
-    return total;
-  }
-
-  bool get _podeConfirmarPedido =>
-      reservaSelecionada != null && itensPedido.isNotEmpty;
+  bool salvandoPedido = false;
 
   @override
   void initState() {
     super.initState();
 
+    // Carrega os dados necessários para montar os dropdowns da tela.
     Future.microtask(() {
       context.read<ProdutoViewModel>().carregarProdutos();
       context.read<ReservaViewModel>().carregarReservasAbertas();
@@ -72,6 +74,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
   }
 
   void _adicionarItem() {
+    // Valida reserva, produto e quantidade antes de adicionar à lista local.
     if (!_formKey.currentState!.validate()) return;
 
     if (reservaSelecionada == null) {
@@ -91,6 +94,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
     );
 
     setState(() {
+      // O item fica temporariamente na tela até o usuário confirmar o pedido.
       itensPedido.add(item);
 
       produtoSelecionado = null;
@@ -101,76 +105,48 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
     _mostrarMensagem('Item adicionado ao pedido.');
   }
 
-  void _removerItem(int index) {
+  Future<void> _confirmarPedido() async {
+    // A confirmação grava a conta/pedido/itens no Supabase.
+    if (reservaSelecionada == null) {
+      _mostrarMensagem('Selecione uma reserva/quarto.');
+      return;
+    }
+
+    if (itensPedido.isEmpty) {
+      _mostrarMensagem('Adicione pelo menos um item ao pedido.');
+      return;
+    }
+
     setState(() {
-      itensPedido.removeAt(index);
+      salvandoPedido = true;
     });
-  }
 
-  Future<void> _abrirConfirmacaoPedido() async {
-    final reserva = reservaSelecionada;
+    final usuarioLogado = context.read<UsuarioViewModel>().usuarioLogado;
 
-    if (reserva == null || itensPedido.isEmpty) return;
-
-    final confirmado = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Confirmar pedido'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  reserva.descricaoDropdown,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 12),
-                ...itensPedido.map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Text(
-                      '${item.quantidade}x ${item.produto.nomeProduto} - R\$ ${item.subtotal.toStringAsFixed(2)}',
-                    ),
-                  ),
-                ),
-                const Divider(height: 24),
-                Text(
-                  'Total: R\$ ${totalPedido.toStringAsFixed(2)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(backgroundColor: verdeEscuro),
-              child: const Text(
-                'Confirmar',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmado != true || !mounted) return;
+    // pedido.id_usuario é obrigatório na modelagem do banco.
+    if (usuarioLogado == null) {
+      setState(() {
+        salvandoPedido = false;
+      });
+      _mostrarMensagem('Usuario logado nao encontrado.');
+      return;
+    }
 
     final pedidoVM = context.read<PedidoViewModel>();
+    // Envia uma cópia da lista para evitar alterações durante a gravação.
     final sucesso = await pedidoVM.gravarContaConsumo(
-      reserva: reserva,
+      reserva: reservaSelecionada!,
       itens: List<ItemPedidoTemporario>.from(itensPedido),
       total: totalPedido,
+      idUsuario: usuarioLogado.idUsuario,
+      observacao: _observacaoPedido(),
     );
 
     if (!mounted) return;
+
+    setState(() {
+      salvandoPedido = false;
+    });
 
     if (!sucesso) {
       _mostrarMensagem(
@@ -180,6 +156,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
     }
 
     setState(() {
+      // Depois de gravar com sucesso, limpa o formulário para um novo pedido.
       itensPedido.clear();
       reservaSelecionada = null;
       produtoSelecionado = null;
@@ -187,7 +164,18 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
       _observacaoController.clear();
     });
 
-    _mostrarMensagem('Pedido confirmado para a reserva.');
+    _mostrarMensagem('Pedido confirmado e vinculado a ContaConsumo.');
+  }
+
+  String? _observacaoPedido() {
+    // A tabela pedido tem observação, mas item_pedido não. Por isso as
+    // observações dos itens são consolidadas no campo observacao do pedido.
+    final observacoes = itensPedido
+        .where((item) => item.observacao.trim().isNotEmpty)
+        .map((item) => '${item.produto.nomeProduto}: ${item.observacao.trim()}')
+        .join('\n');
+
+    return observacoes.isEmpty ? null : observacoes;
   }
 
   void _mostrarMensagem(String mensagem) {
@@ -198,8 +186,8 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer3<ProdutoViewModel, ReservaViewModel, PedidoViewModel>(
-      builder: (context, produtoVM, reservaVM, pedidoVM, child) {
+    return Consumer2<ProdutoViewModel, ReservaViewModel>(
+      builder: (context, produtoVM, reservaVM, child) {
         final carregando = produtoVM.isLoading || reservaVM.isLoading;
 
         return Scaffold(
@@ -284,22 +272,12 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                                     'R\$ ${item.produto.preco.toStringAsFixed(2)} cada',
                                   ),
 
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'R\$ ${item.subtotal.toStringAsFixed(2)}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: verdeEscuro,
-                                        ),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete_outline),
-                                        color: Colors.redAccent,
-                                        onPressed: () => _removerItem(index),
-                                      ),
-                                    ],
+                                  trailing: Text(
+                                    'R\$ ${item.subtotal.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: verdeEscuro,
+                                    ),
                                   ),
                                 );
                               },
@@ -344,19 +322,16 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                             width: double.infinity,
                             height: 50,
                             child: ElevatedButton.icon(
-                              onPressed:
-                                  _podeConfirmarPedido && !pedidoVM.isLoading
-                                  ? _abrirConfirmacaoPedido
-                                  : null,
+                              onPressed: salvandoPedido
+                                  ? null
+                                  : _confirmarPedido,
                               icon: const Icon(
                                 Icons.check,
                                 color: Colors.white,
                               ),
-                              label: Text(
-                                pedidoVM.isLoading
-                                    ? 'Gravando...'
-                                    : 'Confirmar Pedido',
-                                style: const TextStyle(
+                              label: const Text(
+                                'Confirmar e Vincular à ContaConsumo',
+                                style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -387,8 +362,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
   }
 
   Widget _buildDropdownReserva(ReservaViewModel reservaVM) {
-    final reservaTravada = itensPedido.isNotEmpty;
-
+    // Mostra erro/lista vazia antes de renderizar o dropdown.
     if (reservaVM.mensagemErro != null) {
       return Text(
         reservaVM.mensagemErro!,
@@ -410,24 +384,19 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       ),
       hint: const Text('Selecione a reserva'),
-      disabledHint: reservaSelecionada == null
-          ? null
-          : Text(reservaSelecionada!.descricaoDropdown),
       items: reservaVM.reservas.map((reserva) {
         return DropdownMenuItem<Reserva>(
           value: reserva,
           child: Text(reserva.descricaoDropdown),
         );
       }).toList(),
-      onChanged: reservaTravada
-          ? null
-          : (value) {
-              setState(() {
-                reservaSelecionada = value;
-                produtoSelecionado = null;
-                quantidade = 1;
-              });
-            },
+      onChanged: (value) {
+        setState(() {
+          reservaSelecionada = value;
+          produtoSelecionado = null;
+          quantidade = 1;
+        });
+      },
       validator: (value) {
         if (value == null) {
           return 'Selecione uma reserva';
@@ -439,6 +408,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
   }
 
   Widget _buildDropdownProduto(ProdutoViewModel produtoVM) {
+    // Produto só é liberado depois da reserva, pois o pedido precisa de conta.
     final produtoLiberado = reservaSelecionada != null;
 
     if (produtoVM.mensagemErro != null) {
@@ -504,6 +474,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
   }
 
   Widget _buildQuantidadeSelector() {
+    // A quantidade só pode ser alterada após escolher um produto.
     final habilitado = produtoSelecionado != null;
 
     return Container(
@@ -557,6 +528,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
   }
 
   Widget _buildBotaoAdicionar() {
+    // O botão só habilita quando reserva e produto já foram selecionados.
     final habilitado = reservaSelecionada != null && produtoSelecionado != null;
 
     return SizedBox(

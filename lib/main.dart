@@ -1,3 +1,4 @@
+import 'package:bravo_restaurante/mvvm/conta_consumo_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/pedido_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
@@ -24,6 +25,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => ProdutoViewModel()),
         ChangeNotifierProvider(create: (_) => ReservaViewModel()),
         ChangeNotifierProvider(create: (_) => PedidoViewModel()),
+        ChangeNotifierProvider(create: (_) => ContaConsumoViewModel()),
       ],
       child: const BravoApp(),
     ),

@@ -15,17 +15,18 @@ class ItemPedidoTemporario {
     return produto.preco * quantidade;
   }
 
-  Map<String, dynamic> toMap({String? idContaConsumo}) {
+  // Monta o payload esperado pela tabela item_pedido.
+  // O id_pedido só existe depois que o pedido é criado no banco.
+  Map<String, dynamic> toMap({String? idPedido}) {
     final map = {
       'id_produto': produto.idProduto,
       'quantidade': quantidade,
       'valor_unitario': produto.preco,
       'subtotal': subtotal,
-      'observacao': observacao,
     };
 
-    if (idContaConsumo != null) {
-      map['id_conta_consumo'] = idContaConsumo;
+    if (idPedido != null) {
+      map['id_pedido'] = idPedido;
     }
 
     return map;

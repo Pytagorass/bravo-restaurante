@@ -1,3 +1,4 @@
+import 'package:bravo_restaurante/pages/conta/conta_hospede_view.dart';
 import 'package:bravo_restaurante/pages/pedido/registrar_pedido_view.dart';
 import 'package:flutter/material.dart';
 
@@ -31,6 +32,13 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  void _abrirContaHospede() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ContaHospedeView()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,6 +67,7 @@ class _HomeViewState extends State<HomeView> {
             _AcessosRapidosCard(
               abrirTela: _abrirTela,
               abrirRegistrarPedido: _abrirRegistrarPedido,
+              abrirContaHospede: _abrirContaHospede,
             ),
           ],
         ),
@@ -119,7 +128,7 @@ class _HomeViewState extends State<HomeView> {
           ListTile(
             leading: const Icon(Icons.account_balance_wallet),
             title: const Text('Conta do Hóspede'),
-            onTap: () => _abrirTela('Conta do Hóspede'),
+            onTap: _abrirContaHospede,
           ),
           ListTile(
             leading: const Icon(Icons.attach_money),
@@ -175,10 +184,12 @@ class _ResumoCard extends StatelessWidget {
 class _AcessosRapidosCard extends StatelessWidget {
   final void Function(String nomeTela) abrirTela;
   final VoidCallback abrirRegistrarPedido;
+  final VoidCallback abrirContaHospede;
 
   const _AcessosRapidosCard({
     required this.abrirTela,
     required this.abrirRegistrarPedido,
+    required this.abrirContaHospede,
   });
 
   @override
@@ -222,7 +233,7 @@ class _AcessosRapidosCard extends StatelessWidget {
                   child: _QuickButton(
                     label: 'Conta do Hóspede',
                     icon: Icons.account_balance_wallet,
-                    onTap: () => abrirTela('Conta do Hóspede'),
+                    onTap: abrirContaHospede,
                   ),
                 ),
                 const SizedBox(width: 12),
