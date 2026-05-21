@@ -1,3 +1,4 @@
+import 'package:bravo_restaurante/pages/pedido/registrar_pedido_view.dart';
 import 'package:flutter/material.dart';
 
 class HomeView extends StatefulWidget {
@@ -9,7 +10,6 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   static const Color verdeEscuro = Color(0xFF26522C);
-  static const Color verdeMedio = Color(0xFF628D38);
   static const Color cinzaEscuro = Color(0xFF30332E);
 
   int _selectedIndex = 0;
@@ -22,6 +22,13 @@ class _HomeViewState extends State<HomeView> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text('Abrir tela: $nomeTela')));
+  }
+
+  void _abrirRegistrarPedido() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const RegistrarPedidoView()),
+    );
   }
 
   @override
@@ -49,14 +56,17 @@ class _HomeViewState extends State<HomeView> {
           children: [
             _ResumoCard(),
             const SizedBox(height: 16),
-            _AcessosRapidosCard(abrirTela: _abrirTela),
+            _AcessosRapidosCard(
+              abrirTela: _abrirTela,
+              abrirRegistrarPedido: _abrirRegistrarPedido,
+            ),
           ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: verdeEscuro,
-        unselectedItemColor: cinzaEscuro.withOpacity(0.6),
+        unselectedItemColor: cinzaEscuro.withValues(alpha: 0.6),
         showUnselectedLabels: true,
         onTap: (index) {
           setState(() => _selectedIndex = index);
@@ -99,7 +109,7 @@ class _HomeViewState extends State<HomeView> {
           ListTile(
             leading: const Icon(Icons.receipt_long),
             title: const Text('Registrar Pedido'),
-            onTap: () => _abrirTela('Registrar Pedido'),
+            onTap: _abrirRegistrarPedido,
           ),
           ListTile(
             leading: const Icon(Icons.local_bar),
@@ -164,10 +174,12 @@ class _ResumoCard extends StatelessWidget {
 
 class _AcessosRapidosCard extends StatelessWidget {
   final void Function(String nomeTela) abrirTela;
+  final VoidCallback abrirRegistrarPedido;
 
-  const _AcessosRapidosCard({required this.abrirTela});
-
-  static const Color verdeMedio = Color(0xFF628D38);
+  const _AcessosRapidosCard({
+    required this.abrirTela,
+    required this.abrirRegistrarPedido,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -190,7 +202,7 @@ class _AcessosRapidosCard extends StatelessWidget {
                   child: _QuickButton(
                     label: 'Registrar Pedido',
                     icon: Icons.receipt_long,
-                    onTap: () => abrirTela('Registrar Pedido'),
+                    onTap: abrirRegistrarPedido,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -255,7 +267,7 @@ class _QuickButton extends StatelessWidget {
         style: const TextStyle(color: verdeEscuro),
       ),
       style: OutlinedButton.styleFrom(
-        side: BorderSide(color: verdeMedio.withOpacity(0.6)),
+        side: BorderSide(color: verdeMedio.withValues(alpha: 0.6)),
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),

@@ -116,6 +116,8 @@
 //   }
 // }
 
+import 'dart:async';
+
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
 import 'package:bravo_restaurante/pages/home/home_view.dart';
 import 'package:flutter/material.dart';
@@ -150,25 +152,43 @@ class _LoginViewState extends State<LoginView> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
+    FocusScope.of(context).unfocus();
     setState(() => _isLoading = true);
 
     final usuarioVM = Provider.of<UsuarioViewModel>(context, listen: false);
+    final email = _emailController.text.trim();
+    final senha = _senhaController.text.trim();
 
-    final sucesso = await usuarioVM.login(
-      email: _emailController.text.trim().toLowerCase(),
-      senha: _senhaController.text.trim(),
-    );
+    try {
+      final sucesso = await usuarioVM
+          .login(email: email, senha: senha)
+          .timeout(const Duration(seconds: 12));
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() => _isLoading = false);
+      if (sucesso) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeView()),
+        );
+        return;
+      }
 
-    if (sucesso) {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeView()));
-    } else {
+      debugPrint('Login falhou: ${usuarioVM.mensagemErro}');
       _mostrarErro(usuarioVM.mensagemErro ?? 'E-mail ou senha incorretos.');
+    } on TimeoutException {
+      if (!mounted) return;
+
+      debugPrint('Login falhou: tempo limite na comunicacao com o banco.');
+      _mostrarErro('Tempo limite ao conectar com o banco de dados.');
+    } catch (e) {
+      if (!mounted) return;
+
+      debugPrint('Login falhou: $e');
+      _mostrarErro('Erro ao realizar login. Tente novamente.');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

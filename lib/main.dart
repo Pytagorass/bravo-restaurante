@@ -1,3 +1,6 @@
+import 'package:bravo_restaurante/mvvm/pedido_viewmodel.dart';
+import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
+import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
 import 'package:bravo_restaurante/pages/login/login_view.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +18,13 @@ Future<void> main() async {
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => UsuarioViewModel(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UsuarioViewModel()),
+        ChangeNotifierProvider(create: (_) => ProdutoViewModel()),
+        ChangeNotifierProvider(create: (_) => ReservaViewModel()),
+        ChangeNotifierProvider(create: (_) => PedidoViewModel()),
+      ],
       child: const BravoApp(),
     ),
   );
