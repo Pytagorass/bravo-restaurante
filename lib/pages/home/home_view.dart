@@ -1,3 +1,4 @@
+import 'package:bravo_restaurante/pages/bebida/lancar_bebida_view.dart';
 import 'package:bravo_restaurante/pages/conta/conta_hospede_view.dart';
 import 'package:bravo_restaurante/pages/pedido/registrar_pedido_view.dart';
 import 'package:flutter/material.dart';
@@ -19,16 +20,17 @@ class _HomeViewState extends State<HomeView> {
     Navigator.of(context).pop();
   }
 
-  void _abrirTela(String nomeTela) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Abrir tela: $nomeTela')));
-  }
-
   void _abrirRegistrarPedido() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const RegistrarPedidoView()),
+    );
+  }
+
+  void _abrirLancarBebida() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const LancarBebidaView()),
     );
   }
 
@@ -37,6 +39,20 @@ class _HomeViewState extends State<HomeView> {
       context,
       MaterialPageRoute(builder: (_) => const ContaHospedeView()),
     );
+  }
+
+  void _abrirTelaEmConstrucao(String nomeTela) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$nomeTela em construção'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _fecharDrawerEAbrir(VoidCallback abrirTela) {
+    Navigator.pop(context);
+    abrirTela();
   }
 
   @override
@@ -65,9 +81,12 @@ class _HomeViewState extends State<HomeView> {
             _ResumoCard(),
             const SizedBox(height: 16),
             _AcessosRapidosCard(
-              abrirTela: _abrirTela,
               abrirRegistrarPedido: _abrirRegistrarPedido,
+              abrirLancarBebida: _abrirLancarBebida,
               abrirContaHospede: _abrirContaHospede,
+              abrirFecharConta: () {
+                _abrirTelaEmConstrucao('Fechar Conta');
+              },
             ),
           ],
         ),
@@ -75,10 +94,18 @@ class _HomeViewState extends State<HomeView> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: verdeEscuro,
-        unselectedItemColor: cinzaEscuro.withValues(alpha: 0.6),
+        unselectedItemColor: cinzaEscuro.withOpacity(0.6),
         showUnselectedLabels: true,
         onTap: (index) {
           setState(() => _selectedIndex = index);
+
+          if (index == 1) {
+            _abrirRegistrarPedido();
+          } else if (index == 2) {
+            _abrirContaHospede();
+          } else if (index == 3) {
+            _abrirTelaEmConstrucao('Fechar Conta');
+          }
         },
         items: const [
           BottomNavigationBarItem(
@@ -118,22 +145,31 @@ class _HomeViewState extends State<HomeView> {
           ListTile(
             leading: const Icon(Icons.receipt_long),
             title: const Text('Registrar Pedido'),
-            onTap: _abrirRegistrarPedido,
+            onTap: () {
+              _fecharDrawerEAbrir(_abrirRegistrarPedido);
+            },
           ),
           ListTile(
             leading: const Icon(Icons.local_bar),
             title: const Text('Lançar Bebida'),
-            onTap: () => _abrirTela('Lançar Bebida'),
+            onTap: () {
+              _fecharDrawerEAbrir(_abrirLancarBebida);
+            },
           ),
           ListTile(
             leading: const Icon(Icons.account_balance_wallet),
             title: const Text('Conta do Hóspede'),
-            onTap: _abrirContaHospede,
+            onTap: () {
+              _fecharDrawerEAbrir(_abrirContaHospede);
+            },
           ),
           ListTile(
             leading: const Icon(Icons.attach_money),
             title: const Text('Fechar Conta'),
-            onTap: () => _abrirTela('Fechar Conta'),
+            onTap: () {
+              Navigator.pop(context);
+              _abrirTelaEmConstrucao('Fechar Conta');
+            },
           ),
           const Spacer(),
           ListTile(
@@ -156,10 +192,10 @@ class _ResumoCard extends StatelessWidget {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      child: const Padding(
+        padding: EdgeInsets.all(16),
         child: Row(
-          children: const [
+          children: [
             CircleAvatar(
               backgroundColor: verdeMedio,
               child: Icon(Icons.restaurant, color: Colors.white),
@@ -182,14 +218,16 @@ class _ResumoCard extends StatelessWidget {
 }
 
 class _AcessosRapidosCard extends StatelessWidget {
-  final void Function(String nomeTela) abrirTela;
   final VoidCallback abrirRegistrarPedido;
+  final VoidCallback abrirLancarBebida;
   final VoidCallback abrirContaHospede;
+  final VoidCallback abrirFecharConta;
 
   const _AcessosRapidosCard({
-    required this.abrirTela,
     required this.abrirRegistrarPedido,
+    required this.abrirLancarBebida,
     required this.abrirContaHospede,
+    required this.abrirFecharConta,
   });
 
   @override
@@ -221,7 +259,7 @@ class _AcessosRapidosCard extends StatelessWidget {
                   child: _QuickButton(
                     label: 'Lançar Bebida',
                     icon: Icons.local_bar,
-                    onTap: () => abrirTela('Lançar Bebida'),
+                    onTap: abrirLancarBebida,
                   ),
                 ),
               ],
@@ -241,7 +279,7 @@ class _AcessosRapidosCard extends StatelessWidget {
                   child: _QuickButton(
                     label: 'Fechar Conta',
                     icon: Icons.attach_money,
-                    onTap: () => abrirTela('Fechar Conta'),
+                    onTap: abrirFecharConta,
                   ),
                 ),
               ],
@@ -275,10 +313,10 @@ class _QuickButton extends StatelessWidget {
       label: Text(
         label,
         textAlign: TextAlign.center,
-        style: const TextStyle(color: verdeEscuro),
+        style: const TextStyle(color: verdeEscuro, fontWeight: FontWeight.w600),
       ),
       style: OutlinedButton.styleFrom(
-        side: BorderSide(color: verdeMedio.withValues(alpha: 0.6)),
+        side: BorderSide(color: verdeMedio.withOpacity(0.6)),
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),

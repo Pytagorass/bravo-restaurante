@@ -1,121 +1,3 @@
-// import 'package:bravo_restaurante/pages/home/home_view.dart';
-// import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-
-// class LoginView extends StatefulWidget {
-//   const LoginView({super.key});
-
-//   @override
-//   State<LoginView> createState() => _LoginViewState();
-// }
-
-// class _LoginViewState extends State<LoginView> {
-//   final emailController = TextEditingController();
-//   final senhaController = TextEditingController();
-
-//   bool isLoading = false;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.white,
-//       body: Center(
-//         child: SingleChildScrollView(
-//           child: Padding(
-//             padding: const EdgeInsets.symmetric(horizontal: 24),
-//             child: Column(
-//               mainAxisAlignment: MainAxisAlignment.center,
-//               children: [
-//                 // 🔹 LOGO
-//                 Image.asset('assets/LogoBravo.ico', height: 120),
-
-//                 const SizedBox(height: 40),
-
-//                 // 🔹 CAMPO EMAIL
-//                 TextField(
-//                   controller: emailController,
-//                   decoration: InputDecoration(
-//                     labelText: 'Email',
-//                     border: OutlineInputBorder(),
-//                   ),
-//                 ),
-
-//                 const SizedBox(height: 16),
-
-//                 // 🔹 CAMPO SENHA
-//                 TextField(
-//                   controller: senhaController,
-//                   obscureText: true,
-//                   decoration: InputDecoration(
-//                     labelText: 'Senha',
-//                     border: OutlineInputBorder(),
-//                   ),
-//                 ),
-
-//                 const SizedBox(height: 24),
-
-//                 // 🔹 BOTÃO
-//                 SizedBox(
-//                   width: double.infinity,
-//                   height: 50,
-//                   child: ElevatedButton(
-//                     onPressed: isLoading
-//                         ? null
-//                         : () async {
-//                             setState(() {
-//                               isLoading = true;
-//                             });
-
-//                             final usuarioViewModel = context
-//                                 .read<UsuarioViewModel>();
-
-//                             final sucesso = await usuarioViewModel.login(
-//                               email: emailController.text.trim(),
-//                               senha: senhaController.text.trim(),
-//                             );
-
-//                             if (!context.mounted) return;
-
-//                             setState(() {
-//                               isLoading = false;
-//                             });
-
-//                             if (sucesso) {
-//                               Navigator.pushReplacement(
-//                                 context,
-//                                 MaterialPageRoute(
-//                                   builder: (_) => const HomeView(),
-//                                 ),
-//                               );
-//                             } else {
-//                               ScaffoldMessenger.of(context).showSnackBar(
-//                                 SnackBar(
-//                                   content: Text(
-//                                     usuarioViewModel.mensagemErro ??
-//                                         'Erro ao realizar login',
-//                                   ),
-//                                 ),
-//                               );
-//                             }
-//                           },
-//                     style: ElevatedButton.styleFrom(
-//                       backgroundColor: const Color(0xFF26522C),
-//                     ),
-//                     child: isLoading
-//                         ? const CircularProgressIndicator(color: Colors.white)
-//                         : const Text('Entrar', style: TextStyle(fontSize: 16)),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'dart:async';
 
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
@@ -172,9 +54,9 @@ class _LoginViewState extends State<LoginView> {
 
       if (sucesso) {
         // Login validado: remove a tela de login da pilha e abre a Home.
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeView()),
-        );
+        Navigator.of(
+          context,
+        ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeView()));
         return;
       }
 
@@ -200,7 +82,7 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void _mostrarErro(String mensagem) {
-    // Centraliza a exibição de erros para manter o visual consistente.
+    // Centraliza a exibição de erros.
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensagem, textAlign: TextAlign.center),
@@ -220,7 +102,7 @@ class _LoginViewState extends State<LoginView> {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              Image.asset('assets/LogoBravo.png', height: 110),
+              Image.asset('assets/LogoBravo.png', height: 250, width: 250),
 
               const SizedBox(height: 16),
 

@@ -14,7 +14,6 @@ class ContaHospedeView extends StatefulWidget {
 
 class _ContaHospedeViewState extends State<ContaHospedeView> {
   static const Color verdeEscuro = Color(0xFF26522C);
-  static const Color verdeMedio = Color(0xFF628D38);
   static const Color cinzaEscuro = Color(0xFF30332E);
 
   Reserva? reservaSelecionada;
@@ -25,6 +24,7 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
 
     // A tela sempre começa listando as reservas abertas disponíveis.
     Future.microtask(() {
+      // ignore: use_build_context_synchronously
       context.read<ReservaViewModel>().carregarReservasAbertas();
     });
   }
@@ -113,7 +113,7 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<Reserva>(
-          value: reservaSelecionada,
+          initialValue: reservaSelecionada,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
             contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -139,7 +139,6 @@ class _ContaDetalhes extends StatelessWidget {
 
   const _ContaDetalhes({required this.conta});
 
-  static const Color verdeEscuro = Color(0xFF26522C);
   static const Color verdeMedio = Color(0xFF628D38);
 
   @override
@@ -224,10 +223,7 @@ class _PedidoCard extends StatelessWidget {
         subtitle: Text('R\$ ${pedido.totalPedido.toStringAsFixed(2)}'),
         children: [
           if (pedido.observacao.isNotEmpty)
-            ListTile(
-              dense: true,
-              title: Text(pedido.observacao),
-            ),
+            ListTile(dense: true, title: Text(pedido.observacao)),
           ...pedido.itens.map((item) {
             return ListTile(
               dense: true,

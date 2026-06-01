@@ -48,7 +48,9 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
 
     // Carrega os dados necessários para montar os dropdowns da tela.
     Future.microtask(() {
+      // ignore: use_build_context_synchronously
       context.read<ProdutoViewModel>().carregarProdutos();
+      // ignore: use_build_context_synchronously
       context.read<ReservaViewModel>().carregarReservasAbertas();
     });
   }
@@ -149,9 +151,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
     });
 
     if (!sucesso) {
-      _mostrarMensagem(
-        pedidoVM.mensagemErro ?? 'Erro ao confirmar o pedido.',
-      );
+      _mostrarMensagem(pedidoVM.mensagemErro ?? 'Erro ao confirmar o pedido.');
       return;
     }
 
@@ -378,7 +378,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
     }
 
     return DropdownButtonFormField<Reserva>(
-      value: reservaSelecionada,
+      initialValue: reservaSelecionada,
       decoration: const InputDecoration(
         border: OutlineInputBorder(),
         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -426,7 +426,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
     }
 
     return DropdownButtonFormField<Produto>(
-      value: produtoSelecionado,
+      initialValue: produtoSelecionado,
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
         contentPadding: const EdgeInsets.symmetric(
