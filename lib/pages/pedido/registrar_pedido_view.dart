@@ -9,6 +9,7 @@ import 'package:bravo_restaurante/widgets/info_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+// Lista local usada para montar o pedido antes de confirmar e gravar no banco.
 List<ItemPedidoTemporario> itensPedido = [];
 
 // Soma os subtotais dos itens ainda não gravados no banco.
@@ -34,12 +35,17 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
   static const Color verdeMedio = Color(0xFF628D38);
   static const Color cinzaEscuro = Color(0xFF30332E);
 
+  // Formulario principal usado para validar reserva/produto antes de adicionar item.
   final _formKey = GlobalKey<FormState>();
+
+  // Controller da observacao digitada para o item/pedido.
   final _observacaoController = TextEditingController();
 
+  // Selecoes atuais feitas nos dropdowns.
   Reserva? reservaSelecionada;
   Produto? produtoSelecionado;
 
+  // Estado local da quantidade e do envio para o banco.
   int quantidade = 1;
   bool salvandoPedido = false;
 
@@ -187,6 +193,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
 
   @override
   Widget build(BuildContext context) {
+    // Observa produtos e reservas para montar o formulario quando os dados chegam.
     return Consumer2<ProdutoViewModel, ReservaViewModel>(
       builder: (context, produtoVM, reservaVM, child) {
         final carregando = produtoVM.isLoading || reservaVM.isLoading;
@@ -210,6 +217,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Alerta de contexto no inicio do formulario.
                         const InfoAlert(
                           message:
                               'Registre produtos consumidos e vincule o pedido a uma reserva aberta.',
@@ -243,6 +251,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
 
                         _buildBotaoAdicionar(),
                         if (itensPedido.isNotEmpty) ...[
+                          // A lista aparece apenas depois que ha itens temporarios.
                           const SizedBox(height: 24),
 
                           const Text(
@@ -257,6 +266,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                           const SizedBox(height: 10),
 
                           Card(
+                            // Lista local dos itens que ainda nao foram gravados no banco.
                             elevation: 2,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -295,6 +305,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                           const SizedBox(height: 14),
 
                           Container(
+                            // Total calculado antes da confirmacao final do pedido.
                             width: double.infinity,
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
@@ -327,6 +338,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                           const SizedBox(height: 14),
 
                           SizedBox(
+                            // Confirmacao final grava ContaConsumo, pedido e item_pedido.
                             width: double.infinity,
                             height: 50,
                             child: ElevatedButton.icon(
@@ -524,6 +536,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
   }
 
   Widget _buildObservacaoField() {
+    // Campo opcional para observacoes que serao consolidadas no pedido.
     return TextFormField(
       controller: _observacaoController,
       minLines: 4,

@@ -1,11 +1,18 @@
+// Representa uma bebida ja lancada na ContaConsumo.
+// Este model espelha os campos principais da tabela bebida_lancada.
 class Bebida {
+  // Identificadores usados para relacionar bebida, conta, produto e usuario.
   final String idBebidaLancada;
   final String idConta;
   final String idProduto;
   final String idUsuario;
+
+  // Dados financeiros e quantidade do lancamento.
   final int quantidade;
   final double valorUnitario;
   final double subtotal;
+
+  // Observacao opcional gravada junto com a bebida lancada.
   final String? observacao;
 
   Bebida({
@@ -19,6 +26,7 @@ class Bebida {
     this.observacao,
   });
 
+  // Converte o Map retornado pelo Supabase em um objeto Bebida.
   factory Bebida.fromMap(Map<String, dynamic> map) {
     return Bebida(
       idBebidaLancada: map['id_bebida_lancada'] ?? '',
@@ -32,6 +40,7 @@ class Bebida {
     );
   }
 
+  // Converte o objeto em Map para enviar/gravar no banco quando necessario.
   Map<String, dynamic> toMap() {
     return {
       'id_bebida_lancada': idBebidaLancada,

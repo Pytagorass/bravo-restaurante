@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ContaConsumoViewModel extends ChangeNotifier {
+  // Cliente Supabase usado para consultar conta, pedidos e bebidas da reserva.
   final SupabaseClient _supabase = Supabase.instance.client;
 
+  // Estados observados pela tela de conta do hospede.
   bool isLoading = false;
   String? mensagemErro;
   ContaConsumo? conta;
 
   Future<void> carregarContaDaReserva(Reserva reserva) async {
+    // Limpa dados antigos antes de carregar a conta da nova reserva selecionada.
     isLoading = true;
     mensagemErro = null;
     conta = null;
@@ -76,6 +79,7 @@ class ContaConsumoViewModel extends ChangeNotifier {
           .map<BebidaConta>((item) => BebidaConta.fromMap(item))
           .toList();
 
+      // Junta os dados da conta, pedidos e bebidas em um unico model para a tela.
       conta = ContaConsumo.fromMap(
         contaMap,
         pedidos: pedidos,
@@ -93,6 +97,7 @@ class ContaConsumoViewModel extends ChangeNotifier {
   }
 
   void limpar() {
+    // Remove a conta atual quando nenhuma reserva esta selecionada.
     conta = null;
     mensagemErro = null;
     notifyListeners();

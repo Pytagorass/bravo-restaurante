@@ -20,13 +20,17 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
   static const Color verdeMedio = Color(0xFF628D38);
   static const Color cinzaEscuro = Color(0xFF30332E);
 
+  // Chave usada para validar todos os campos do formulario.
   final _formKey = GlobalKey<FormState>();
 
+  // Guarda a reserva e a bebida selecionadas pelo usuario.
   Reserva? reservaSelecionada;
   Produto? bebidaSelecionada;
 
+  // Quantidade de bebidas que sera lancada na conta.
   int quantidade = 1;
 
+  // Calcula o valor total com base na bebida escolhida e na quantidade.
   double get total {
     if (bebidaSelecionada == null) return 0;
     return bebidaSelecionada!.preco * quantidade;
@@ -36,6 +40,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
   void initState() {
     super.initState();
 
+    // Carrega reservas abertas e produtos assim que a tela termina de abrir.
     Future.microtask(() {
       context.read<ReservaViewModel>().carregarReservasAbertas();
       context.read<ProdutoViewModel>().carregarProdutos();
@@ -43,6 +48,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
   }
 
   void _aumentarQuantidade() {
+    // Atualiza a tela somando uma unidade.
     setState(() {
       quantidade++;
     });
@@ -51,12 +57,14 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
   void _diminuirQuantidade() {
     if (quantidade <= 1) return;
 
+    // Atualiza a tela removendo uma unidade sem deixar passar de 1.
     setState(() {
       quantidade--;
     });
   }
 
   Future<void> _lancarBebida() async {
+    // Valida formulario, usuario logado e dados escolhidos antes de salvar.
     if (!_formKey.currentState!.validate()) return;
 
     if (reservaSelecionada == null) {
@@ -76,6 +84,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
       return;
     }
 
+    // Envia o lancamento para o ViewModel, que grava no backend.
     final sucesso = await context.read<BebidaViewModel>().lancarBebidaNaConta(
       idConta: reservaSelecionada!.idConta,
       idProduto: bebidaSelecionada!.idProduto,
@@ -85,6 +94,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
       observacao: 'Lançamento realizado pelo app mobile',
     );
 
+    // Evita atualizar a interface se o usuario saiu da tela durante o envio.
     if (!mounted) return;
 
     if (sucesso) {
@@ -92,11 +102,13 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
         'Bebida lançada na conta: ${quantidade}x ${bebidaSelecionada!.nomeProduto}',
       );
 
+      // Apos salvar, limpa a bebida e volta a quantidade para o padrao.
       setState(() {
         bebidaSelecionada = null;
         quantidade = 1;
       });
     } else {
+      // Mostra a mensagem de erro retornada pelo ViewModel, se existir.
       final erro = context.read<BebidaViewModel>().mensagemErro;
       _mostrarMensagem(erro ?? 'Erro ao lançar bebida.');
     }
@@ -110,10 +122,12 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
 
   @override
   Widget build(BuildContext context) {
+    // Observa reservas e produtos para reconstruir a tela quando os dados mudam.
     return Consumer2<ReservaViewModel, ProdutoViewModel>(
       builder: (context, reservaVM, produtoVM, child) {
         final carregando = reservaVM.isLoading || produtoVM.isLoading;
 
+        // Filtra apenas produtos cadastrados como bebida.
         final bebidas = produtoVM.produtos
             .where((produto) => produto.categoria == 'Bebida')
             .toList();
@@ -191,6 +205,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
   }
 
   Widget _buildDropdownReserva(ReservaViewModel reservaVM) {
+    // Lista as reservas abertas para escolher em qual conta a bebida entrara.
     if (reservaVM.mensagemErro != null) {
       return Text(
         reservaVM.mensagemErro!,
@@ -220,12 +235,14 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
       }).toList(),
       onChanged: (value) {
         setState(() {
+          // Trocar de reserva reinicia a bebida e a quantidade escolhidas.
           reservaSelecionada = value;
           bebidaSelecionada = null;
           quantidade = 1;
         });
       },
       validator: (value) {
+        // O formulario nao continua sem uma reserva valida.
         if (value == null) {
           return 'Selecione uma reserva';
         }
@@ -235,6 +252,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
   }
 
   Widget _buildDropdownBebida(List<Produto> bebidas) {
+    // A bebida so pode ser escolhida depois que uma reserva for selecionada.
     final bebidaLiberada = reservaSelecionada != null;
 
     if (bebidas.isEmpty) {
@@ -273,12 +291,14 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
       onChanged: bebidaLiberada
           ? (value) {
               setState(() {
+                // Ao trocar a bebida, a quantidade volta para 1.
                 bebidaSelecionada = value;
                 quantidade = 1;
               });
             }
           : null,
       validator: (value) {
+        // Primeiro exige a reserva, depois exige a bebida.
         if (reservaSelecionada == null) {
           return 'Selecione primeiro a reserva/quarto';
         }
@@ -293,6 +313,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
   }
 
   Widget _buildQuantidadeSelector() {
+    // Controle visual para aumentar ou diminuir a quantidade da bebida.
     final habilitado = bebidaSelecionada != null;
 
     return Container(
@@ -334,6 +355,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
   }
 
   Widget _buildValorUnitario() {
+    // Campo somente leitura com o preco da bebida escolhida.
     final valor = bebidaSelecionada?.preco ?? 0.0;
 
     return TextFormField(
@@ -348,6 +370,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
   }
 
   Widget _buildTotalCard() {
+    // Exibe o total calculado antes de confirmar o lancamento.
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -376,6 +399,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
   }
 
   Widget _buildBotaoLancar() {
+    // Habilita o botao apenas quando reserva e bebida foram selecionadas.
     final habilitado = reservaSelecionada != null && bebidaSelecionada != null;
 
     return SizedBox(

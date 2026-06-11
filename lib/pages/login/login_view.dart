@@ -17,11 +17,17 @@ class _LoginViewState extends State<LoginView> {
   static const Color verdeMedio = Color(0xFF628D38);
   static const Color cinzaEscuro = Color(0xFF30332E);
 
+  // Chave do formulario usada para validar e-mail e senha juntos.
   final _formKey = GlobalKey<FormState>();
+
+  // Controllers leem o texto digitado nos campos de login.
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
 
+  // Controla se a senha aparece escondida ou visivel.
   bool _obscurePassword = true;
+
+  // Bloqueia o botao e exibe loading durante a tentativa de login.
   bool _isLoading = false;
 
   @override
@@ -95,6 +101,7 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    // Tela de entrada com logo, formulario e botao de autenticacao.
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F3),
       body: Center(
@@ -125,6 +132,7 @@ class _LoginViewState extends State<LoginView> {
 
               const SizedBox(height: 32),
 
+              // Card central que agrupa os campos obrigatorios do login.
               Card(
                 elevation: 6,
                 shape: RoundedRectangleBorder(
@@ -137,6 +145,7 @@ class _LoginViewState extends State<LoginView> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        // Campo de e-mail validado antes de chamar o ViewModel.
                         TextFormField(
                           controller: _emailController,
                           decoration: const InputDecoration(
@@ -160,6 +169,7 @@ class _LoginViewState extends State<LoginView> {
 
                         const SizedBox(height: 16),
 
+                        // Campo de senha com botao para alternar visibilidade.
                         TextFormField(
                           controller: _senhaController,
                           obscureText: _obscurePassword,
@@ -175,6 +185,7 @@ class _LoginViewState extends State<LoginView> {
                               ),
                               onPressed: () {
                                 setState(() {
+                                  // Alterna entre mostrar e esconder a senha digitada.
                                   _obscurePassword = !_obscurePassword;
                                 });
                               },
@@ -191,6 +202,7 @@ class _LoginViewState extends State<LoginView> {
 
                         const SizedBox(height: 24),
 
+                        // Botao principal: chama login ou mostra progresso.
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(

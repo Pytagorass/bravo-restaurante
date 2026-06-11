@@ -15,12 +15,14 @@ class _HomeViewState extends State<HomeView> {
   static const Color verdeEscuro = Color(0xFF26522C);
   static const Color cinzaEscuro = Color(0xFF30332E);
 
+  // Controla qual item da barra inferior esta selecionado.
   int _selectedIndex = 0;
 
   void _logout() {
     Navigator.of(context).pop();
   }
 
+  // Abre a tela usada para registrar pedidos do restaurante.
   void _abrirRegistrarPedido() {
     Navigator.push(
       context,
@@ -28,6 +30,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  // Abre a tela usada para lancar bebidas na conta do hospede.
   void _abrirLancarBebida() {
     Navigator.push(
       context,
@@ -35,6 +38,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  // Abre a tela que mostra os consumos da conta do hospede.
   void _abrirContaHospede() {
     Navigator.push(
       context,
@@ -42,6 +46,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  // Abre a tela onde a conta selecionada pode ser fechada.
   void _abrirFecharConta() {
     Navigator.push(
       context,
@@ -49,6 +54,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  // Fecha o menu lateral antes de navegar para outra tela.
   void _fecharDrawerEAbrir(VoidCallback abrirTela) {
     Navigator.pop(context);
     abrirTela();
@@ -56,6 +62,7 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
+    // Monta a pagina principal com app bar, drawer, conteudo e menu inferior.
     return Scaffold(
       appBar: AppBar(
         title: const Text('BRAVO Restaurante'),
@@ -71,6 +78,7 @@ class _HomeViewState extends State<HomeView> {
       ),
       drawer: _buildDrawer(),
       body: RefreshIndicator(
+        // Permite puxar a tela para baixo e simular uma atualizacao da Home.
         onRefresh: () async {
           await Future.delayed(const Duration(milliseconds: 500));
         },
@@ -94,6 +102,7 @@ class _HomeViewState extends State<HomeView> {
         unselectedItemColor: cinzaEscuro.withOpacity(0.6),
         showUnselectedLabels: true,
         onTap: (index) {
+          // Atualiza o item selecionado e abre a tela ligada ao indice tocado.
           setState(() => _selectedIndex = index);
 
           if (index == 1) {
@@ -127,6 +136,7 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Drawer _buildDrawer() {
+    // Menu lateral com atalhos para as principais funcoes do aplicativo.
     return Drawer(
       child: Column(
         children: [
@@ -186,6 +196,7 @@ class _ResumoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Card informativo exibido no topo da Home.
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -229,6 +240,7 @@ class _AcessosRapidosCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Card com botoes rapidos para acessar os fluxos principais.
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -304,6 +316,7 @@ class _QuickButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Botao reutilizavel dos atalhos da Home.
     return OutlinedButton.icon(
       onPressed: onTap,
       icon: Icon(icon, color: verdeMedio),

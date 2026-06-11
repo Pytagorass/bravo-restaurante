@@ -19,28 +19,35 @@ class _FecharContaViewState extends State<FecharContaView> {
   static const Color verdeMedio = Color(0xFF628D38);
   static const Color cinzaEscuro = Color(0xFF30332E);
 
+  // Cliente usado para buscar e atualizar dados diretamente no Supabase.
   final SupabaseClient _supabase = Supabase.instance.client;
 
+  // Reserva escolhida no dropdown; a partir dela a conta sera carregada.
   Reserva? reservaSelecionada;
 
+  // Estados de carregamento e erro exibidos na tela.
   bool carregandoConta = false;
   String? mensagemErro;
 
+  // Listas preenchidas com os pedidos e bebidas encontrados para a conta.
   List<Map<String, dynamic>> pedidos = [];
   List<Map<String, dynamic>> bebidas = [];
 
+  // Valor final acumulado da ContaConsumo selecionada.
   double totalConta = 0.0;
 
   @override
   void initState() {
     super.initState();
 
+    // Carrega as reservas abertas depois que a tela foi criada.
     Future.microtask(() {
       context.read<ReservaViewModel>().carregarReservasAbertas();
     });
   }
 
   Future<void> _carregarResumoConta(Reserva reserva) async {
+    // Prepara a tela para buscar novamente os dados da conta.
     setState(() {
       carregandoConta = true;
       mensagemErro = null;
@@ -50,6 +57,7 @@ class _FecharContaViewState extends State<FecharContaView> {
     });
 
     try {
+      // Busca os pedidos vinculados a conta, ignorando pedidos cancelados.
       final pedidosResponse = await _supabase
           .from('pedido')
           .select('''
@@ -68,6 +76,7 @@ class _FecharContaViewState extends State<FecharContaView> {
           .eq('id_conta', reserva.idConta)
           .neq('status_pedido', 'Cancelado');
 
+      // Busca as bebidas lancadas diretamente na mesma conta.
       final bebidasResponse = await _supabase
           .from('bebida_lancada')
           .select('''
@@ -81,12 +90,14 @@ class _FecharContaViewState extends State<FecharContaView> {
           ''')
           .eq('id_conta', reserva.idConta);
 
+      // Busca o total acumulado ja calculado na tabela conta_consumo.
       final contaResponse = await _supabase
           .from('conta_consumo')
           .select('total_acumulado')
           .eq('id_conta', reserva.idConta)
           .maybeSingle();
 
+      // Converte as respostas do Supabase para listas usadas nos cards.
       setState(() {
         pedidos = List<Map<String, dynamic>>.from(pedidosResponse);
         bebidas = List<Map<String, dynamic>>.from(bebidasResponse);
@@ -95,6 +106,7 @@ class _FecharContaViewState extends State<FecharContaView> {
         carregandoConta = false;
       });
     } catch (e) {
+      // Se a busca falhar, a tela mostra a mensagem e encerra o carregamento.
       setState(() {
         mensagemErro = 'Erro ao carregar conta: $e';
         carregandoConta = false;
@@ -103,11 +115,13 @@ class _FecharContaViewState extends State<FecharContaView> {
   }
 
   Future<void> _fecharConta() async {
+    // Impede o fechamento sem uma reserva selecionada.
     if (reservaSelecionada == null) {
       _mostrarMensagem('Selecione uma reserva.');
       return;
     }
 
+    // Pede confirmacao antes de alterar o status da conta no banco.
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) {
@@ -137,6 +151,7 @@ class _FecharContaViewState extends State<FecharContaView> {
     if (confirmar != true) return;
 
     try {
+      // Marca a ContaConsumo como fechada e registra data/hora do fechamento.
       await _supabase
           .from('conta_consumo')
           .update({
@@ -145,6 +160,7 @@ class _FecharContaViewState extends State<FecharContaView> {
           })
           .eq('id_conta', reservaSelecionada!.idConta);
 
+      // Marca a reserva como fechada para retirar da lista de reservas abertas.
       await _supabase
           .from('reserva')
           .update({'status_reserva': 'Fechada'})
@@ -154,6 +170,7 @@ class _FecharContaViewState extends State<FecharContaView> {
 
       _mostrarMensagem('Conta fechada com sucesso.');
 
+      // Limpa os dados exibidos para evitar mostrar a conta fechada na tela.
       setState(() {
         reservaSelecionada = null;
         pedidos = [];
@@ -161,6 +178,7 @@ class _FecharContaViewState extends State<FecharContaView> {
         totalConta = 0.0;
       });
 
+      // Atualiza o dropdown para remover reservas que acabaram de ser fechadas.
       context.read<ReservaViewModel>().carregarReservasAbertas();
     } catch (e) {
       _mostrarMensagem('Erro ao fechar conta: $e');
@@ -174,6 +192,7 @@ class _FecharContaViewState extends State<FecharContaView> {
   }
 
   Future<void> _gerarRelatorioConta() async {
+    // Gera um PDF com o resumo da conta selecionada.
     if (reservaSelecionada == null) {
       _mostrarMensagem('Selecione uma reserva para gerar o relatório.');
       return;
@@ -182,6 +201,7 @@ class _FecharContaViewState extends State<FecharContaView> {
     final pdf = pw.Document();
     final reserva = reservaSelecionada!;
 
+    // Monta uma pagina de PDF com dados do hospede, pedidos, bebidas e total.
     pdf.addPage(
       pw.MultiPage(
         build: (context) => [
@@ -207,6 +227,7 @@ class _FecharContaViewState extends State<FecharContaView> {
           if (pedidos.isEmpty)
             pw.Text('Nenhum pedido registrado.')
           else
+            // Para cada pedido, cria um bloco com seus itens e subtotal.
             ...pedidos.map((pedido) {
               final itens = pedido['item_pedido'] as List<dynamic>? ?? [];
               final totalPedido =
@@ -247,6 +268,7 @@ class _FecharContaViewState extends State<FecharContaView> {
           if (bebidas.isEmpty)
             pw.Text('Nenhuma bebida lançada.')
           else
+            // Para cada bebida, adiciona quantidade, produto e subtotal.
             ...bebidas.map((bebida) {
               final produto = bebida['produto'] as Map<String, dynamic>? ?? {};
               final subtotal = (bebida['subtotal'] as num?)?.toDouble() ?? 0.0;
@@ -269,11 +291,13 @@ class _FecharContaViewState extends State<FecharContaView> {
       ),
     );
 
+    // Abre a tela nativa de impressao/compartilhamento do PDF gerado.
     await Printing.layoutPdf(onLayout: (format) async => pdf.save());
   }
 
   @override
   Widget build(BuildContext context) {
+    // Consumer atualiza a tela quando a lista de reservas mudar no ViewModel.
     return Consumer<ReservaViewModel>(
       builder: (context, reservaVM, child) {
         return Scaffold(
@@ -304,20 +328,24 @@ class _FecharContaViewState extends State<FecharContaView> {
 
                 const SizedBox(height: 18),
 
+                // O card da reserva so aparece depois de uma escolha no dropdown.
                 if (reservaSelecionada != null) _buildCardReserva(),
 
+                // Enquanto busca pedidos e bebidas, exibe carregamento central.
                 if (carregandoConta)
                   const Padding(
                     padding: EdgeInsets.all(24),
                     child: Center(child: CircularProgressIndicator()),
                   ),
 
+                // Caso a busca falhe, mostra o texto de erro na propria tela.
                 if (mensagemErro != null)
                   Text(
                     mensagemErro!,
                     style: const TextStyle(color: Colors.red),
                   ),
 
+                // O resumo e as acoes aparecem somente com a conta carregada.
                 if (!carregandoConta && reservaSelecionada != null) ...[
                   const SizedBox(height: 18),
                   _buildResumoConta(),
@@ -344,6 +372,7 @@ class _FecharContaViewState extends State<FecharContaView> {
   }
 
   Widget _buildDropdownReserva(ReservaViewModel reservaVM) {
+    // Monta o seletor de reservas abertas e carrega a conta ao selecionar.
     if (reservaVM.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -377,10 +406,12 @@ class _FecharContaViewState extends State<FecharContaView> {
       }).toList(),
       onChanged: (value) {
         setState(() {
+          // Guarda a reserva escolhida antes de buscar o resumo da conta.
           reservaSelecionada = value;
         });
 
         if (value != null) {
+          // Ao selecionar uma reserva, carrega pedidos, bebidas e total.
           _carregarResumoConta(value);
         }
       },
@@ -388,6 +419,7 @@ class _FecharContaViewState extends State<FecharContaView> {
   }
 
   Widget _buildCardReserva() {
+    // Exibe os dados principais da reserva selecionada.
     final reserva = reservaSelecionada!;
 
     return Container(
@@ -433,6 +465,7 @@ class _FecharContaViewState extends State<FecharContaView> {
   }
 
   Widget _buildResumoConta() {
+    // Agrupa pedidos, bebidas e total acumulado em um resumo visual.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -496,6 +529,7 @@ class _FecharContaViewState extends State<FecharContaView> {
   }
 
   Widget _buildPedidoCard(Map<String, dynamic> pedido) {
+    // Card individual com itens e total de um pedido da conta.
     final total = (pedido['total_pedido'] as num?)?.toDouble() ?? 0.0;
     final itens = pedido['item_pedido'] as List<dynamic>? ?? [];
 
@@ -528,6 +562,7 @@ class _FecharContaViewState extends State<FecharContaView> {
   }
 
   Widget _buildBebidaCard(Map<String, dynamic> bebida) {
+    // Card individual com quantidade, nome e subtotal da bebida lancada.
     final produto = bebida['produto'] as Map<String, dynamic>? ?? {};
     final subtotal = (bebida['subtotal'] as num?)?.toDouble() ?? 0.0;
 
@@ -546,6 +581,7 @@ class _FecharContaViewState extends State<FecharContaView> {
   }
 
   Widget _buildBotaoFecharConta() {
+    // Botao principal que inicia o fluxo de confirmacao e fechamento da conta.
     return SizedBox(
       width: double.infinity,
       height: 50,
@@ -565,6 +601,7 @@ class _FecharContaViewState extends State<FecharContaView> {
   }
 
   Widget _buildBotaoComprovante() {
+    // Botao secundario que gera o comprovante em PDF da conta.
     return SizedBox(
       width: double.infinity,
       height: 48,
@@ -581,6 +618,7 @@ class _FecharContaViewState extends State<FecharContaView> {
   }
 
   Widget _buildAvisoFinal() {
+    // Aviso exibido para reforcar a consequencia do fechamento da conta.
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),

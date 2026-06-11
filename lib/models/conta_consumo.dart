@@ -1,8 +1,15 @@
+// Representa a conta de consumo de uma reserva.
+// Junta total, status e os consumos carregados em pedidos e bebidas.
 class ContaConsumo {
+  // Identificacao da conta e da reserva dona dessa conta.
   final String idConta;
   final String idReserva;
+
+  // Total e status atuais calculados/armazenados no banco.
   final double totalAcumulado;
   final String statusConta;
+
+  // Listas detalhadas usadas pela tela Conta do Hospede.
   final List<PedidoConta> pedidos;
   final List<BebidaConta> bebidas;
 
@@ -15,6 +22,7 @@ class ContaConsumo {
     required this.bebidas,
   });
 
+  // Cria uma ContaConsumo a partir do Map da tabela conta_consumo.
   factory ContaConsumo.fromMap(
     Map<String, dynamic> map, {
     List<PedidoConta> pedidos = const [],
@@ -33,11 +41,15 @@ class ContaConsumo {
   }
 }
 
+// Representa um pedido exibido dentro da conta do hospede.
 class PedidoConta {
+  // Dados principais da tabela pedido.
   final String idPedido;
   final String statusPedido;
   final String observacao;
   final double totalPedido;
+
+  // Itens ligados ao pedido pelo relacionamento item_pedido.
   final List<ItemPedidoConta> itens;
 
   PedidoConta({
@@ -48,6 +60,7 @@ class PedidoConta {
     required this.itens,
   });
 
+  // Converte o pedido retornado pelo Supabase, incluindo a lista item_pedido.
   factory PedidoConta.fromMap(Map<String, dynamic> map) {
     // item_pedido chega como lista aninhada na consulta do PostgREST.
     final itensMap = map['item_pedido'] as List<dynamic>? ?? [];
@@ -64,7 +77,9 @@ class PedidoConta {
   }
 }
 
+// Representa cada produto consumido dentro de um pedido.
 class ItemPedidoConta {
+  // Dados exibidos na lista expandida do pedido.
   final String nomeProduto;
   final int quantidade;
   final double valorUnitario;
@@ -77,6 +92,7 @@ class ItemPedidoConta {
     required this.subtotal,
   });
 
+  // Le o item e tambem o produto relacionado para obter o nome.
   factory ItemPedidoConta.fromMap(Map<String, dynamic> map) {
     // O nome do produto vem do relacionamento produto:id_produto.
     final produto = map['produto'] as Map<String, dynamic>? ?? {};
@@ -90,7 +106,9 @@ class ItemPedidoConta {
   }
 }
 
+// Representa uma bebida lancada diretamente na conta, fora de pedido.
 class BebidaConta {
+  // Dados exibidos no card/list tile de bebidas da conta.
   final String nomeProduto;
   final int quantidade;
   final double valorUnitario;
@@ -105,6 +123,7 @@ class BebidaConta {
     required this.observacao,
   });
 
+  // Le a bebida e o produto relacionado retornados pela consulta do Supabase.
   factory BebidaConta.fromMap(Map<String, dynamic> map) {
     // Bebidas são lançamentos diretos na conta, mas também referenciam produto.
     final produto = map['produto'] as Map<String, dynamic>? ?? {};

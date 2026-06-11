@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UsuarioViewModel extends ChangeNotifier {
+  // Cliente Supabase reutilizado para consultar a tabela usuario.
   final SupabaseClient _supabase = Supabase.instance.client;
 
+  // Estados observados pela tela de login para carregar e exibir erro.
   bool isLoading = false;
   String? mensagemErro;
 
+  // Mantem em memoria o usuario autenticado durante a sessao do app.
   Usuario? usuarioLogado;
 
   bool get estaLogado => usuarioLogado != null;

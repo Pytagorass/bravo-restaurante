@@ -17,6 +17,7 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
   static const Color verdeEscuro = Color(0xFF26522C);
   static const Color cinzaEscuro = Color(0xFF30332E);
 
+  // Reserva usada para buscar e exibir a conta de consumo.
   Reserva? reservaSelecionada;
 
   @override
@@ -46,6 +47,7 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
 
   @override
   Widget build(BuildContext context) {
+    // Observa reservas e conta para atualizar a tela conforme as buscas terminam.
     return Consumer2<ReservaViewModel, ContaConsumoViewModel>(
       builder: (context, reservaVM, contaVM, child) {
         return Scaffold(
@@ -70,6 +72,7 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
                   child: ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
+                      // Aviso inicial explicando o objetivo desta consulta.
                       const InfoAlert(
                         message:
                             'Consulte pedidos, bebidas e total acumulado de uma reserva aberta.',
@@ -79,6 +82,7 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
 
                       _buildReservaDropdown(reservaVM),
                       const SizedBox(height: 16),
+                      // Abaixo do dropdown, a tela alterna entre loading, erro e detalhes.
                       if (contaVM.isLoading)
                         const Padding(
                           padding: EdgeInsets.all(24),
@@ -134,6 +138,7 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
             );
           }).toList(),
           onChanged: (value) {
+            // Trocar a reserva dispara nova busca da ContaConsumo.
             _selecionarReserva(value);
           },
         ),
@@ -295,6 +300,7 @@ class _MensagemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Mensagem neutra usada para estado vazio, erro ou ausencia de registros.
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),

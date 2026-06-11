@@ -1,11 +1,14 @@
 import 'package:bravo_restaurante/models/item_pedido_temporario.dart';
+import 'package:bravo_restaurante/models/pedido.dart';
 import 'package:bravo_restaurante/models/reserva.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PedidoViewModel extends ChangeNotifier {
+  // Cliente Supabase usado para gravar conta, pedido e itens do pedido.
   final SupabaseClient _supabase = Supabase.instance.client;
 
+  // Estados observados pela tela enquanto o pedido esta sendo salvo.
   bool isLoading = false;
   String? mensagemErro;
 
@@ -16,6 +19,7 @@ class PedidoViewModel extends ChangeNotifier {
     required String idUsuario,
     String? observacao,
   }) async {
+    // Nao faz sentido abrir/gravar pedido sem pelo menos um item.
     if (itens.isEmpty) {
       mensagemErro = 'Adicione pelo menos um item ao pedido.';
       notifyListeners();
@@ -56,15 +60,18 @@ class PedidoViewModel extends ChangeNotifier {
       }
 
       // Cada confirmacao gera um pedido vinculado a conta da reserva.
+      final novoPedido = Pedido(
+        idPedido: '',
+        idConta: idConta,
+        idUsuario: idUsuario,
+        statusPedido: 'Aberto',
+        observacao: observacao,
+        totalPedido: total,
+      );
+
       final pedido = await _supabase
           .from('pedido')
-          .insert({
-            'id_conta': idConta,
-            'id_usuario': idUsuario,
-            'status_pedido': 'Aberto',
-            'observacao': observacao,
-            'total_pedido': total,
-          })
+          .insert(novoPedido.toInsertMap())
           .select('id_pedido')
           .single();
 
@@ -73,9 +80,10 @@ class PedidoViewModel extends ChangeNotifier {
       // item_pedido recebe id_pedido, nao id_conta. A relacao com a conta
       // passa por pedido -> conta_consumo, conforme a modelagem do banco.
       final itensMap = itens
-          .map((item) => item.toMap(idPedido: idPedido))
+          .map((item) => item.toInsertMap(idPedido: idPedido))
           .toList();
 
+      // Grava todos os itens de uma vez na tabela item_pedido.
       await _supabase.from('item_pedido').insert(itensMap);
 
       isLoading = false;

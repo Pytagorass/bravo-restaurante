@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
+// Widget reutilizavel para mostrar mensagens informativas no topo das telas.
 class InfoAlert extends StatelessWidget {
+  // Texto exibido dentro do alerta.
   final String message;
+
+  // Icone opcional para adaptar o alerta ao contexto da tela.
   final IconData icon;
 
   const InfoAlert({
@@ -14,6 +18,7 @@ class InfoAlert extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Container com fundo destacado e largura total para chamar a atencao.
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -24,8 +29,10 @@ class InfoAlert extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Icone visual que reforca o tipo da mensagem.
           Icon(icon, color: Colors.blue),
           const SizedBox(width: 8),
+          // Expanded evita que textos longos estourem a largura da tela.
           Expanded(
             child: Text(
               message,

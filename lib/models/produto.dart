@@ -1,4 +1,7 @@
+// Representa um produto cadastrado no banco.
+// Pode ser comida, bebida ou outra categoria usada pelos dropdowns.
 class Produto {
+  // Campos principais da tabela produto.
   final String idProduto;
   final String nomeProduto;
   final String categoria;
@@ -13,6 +16,7 @@ class Produto {
     required this.ativo,
   });
 
+  // Converte o Map retornado pelo Supabase em Produto.
   factory Produto.fromMap(Map<String, dynamic> map) {
     return Produto(
       idProduto: map['id_produto'] ?? '',
@@ -23,6 +27,7 @@ class Produto {
     );
   }
 
+  // Converte Produto em Map usando os nomes das colunas do banco.
   Map<String, dynamic> toMap() {
     return {
       'id_produto': idProduto,
