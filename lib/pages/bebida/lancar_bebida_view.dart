@@ -1,7 +1,10 @@
 import 'package:bravo_restaurante/models/produto.dart';
 import 'package:bravo_restaurante/models/reserva.dart';
+import 'package:bravo_restaurante/mvvm/lib/mvvm/bebida_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
+import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
+import 'package:bravo_restaurante/widgets/info_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -53,7 +56,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
     });
   }
 
-  void _lancarBebida() {
+  Future<void> _lancarBebida() async {
     if (!_formKey.currentState!.validate()) return;
 
     if (reservaSelecionada == null) {
@@ -66,14 +69,37 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
       return;
     }
 
-    _mostrarMensagem(
-      'Bebida lançada: ${quantidade}x ${bebidaSelecionada!.nomeProduto} - R\$ ${total.toStringAsFixed(2)}',
+    final usuarioLogado = context.read<UsuarioViewModel>().usuarioLogado;
+
+    if (usuarioLogado == null) {
+      _mostrarMensagem('Usuário não encontrado. Faça login novamente.');
+      return;
+    }
+
+    final sucesso = await context.read<BebidaViewModel>().lancarBebidaNaConta(
+      idConta: reservaSelecionada!.idConta,
+      idProduto: bebidaSelecionada!.idProduto,
+      idUsuario: usuarioLogado.idUsuario,
+      quantidade: quantidade,
+      valorUnitario: bebidaSelecionada!.preco,
+      observacao: 'Lançamento realizado pelo app mobile',
     );
 
-    setState(() {
-      bebidaSelecionada = null;
-      quantidade = 1;
-    });
+    if (!mounted) return;
+
+    if (sucesso) {
+      _mostrarMensagem(
+        'Bebida lançada na conta: ${quantidade}x ${bebidaSelecionada!.nomeProduto}',
+      );
+
+      setState(() {
+        bebidaSelecionada = null;
+        quantidade = 1;
+      });
+    } else {
+      final erro = context.read<BebidaViewModel>().mensagemErro;
+      _mostrarMensagem(erro ?? 'Erro ao lançar bebida.');
+    }
   }
 
   void _mostrarMensagem(String mensagem) {
@@ -102,6 +128,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
             backgroundColor: verdeEscuro,
             foregroundColor: Colors.white,
           ),
+
           body: carregando
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
@@ -111,7 +138,10 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _alertaInfo(),
+                        const InfoAlert(
+                          message:
+                              'Lancamento rapido de bebida direto na ContaConsumo.',
+                        ),
 
                         const SizedBox(height: 18),
 
@@ -150,30 +180,6 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
                 ),
         );
       },
-    );
-  }
-
-  Widget _alertaInfo() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEAF3FF),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.blue.shade100),
-      ),
-      child: const Row(
-        children: [
-          Icon(Icons.info_outline, color: Colors.blue),
-          SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Lançamento rápido de bebida direto na ContaConsumo.',
-              style: TextStyle(color: cinzaEscuro, fontWeight: FontWeight.w500),
-            ),
-          ),
-        ],
-      ),
     );
   }
 

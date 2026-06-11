@@ -1,5 +1,6 @@
 import 'package:bravo_restaurante/pages/bebida/lancar_bebida_view.dart';
 import 'package:bravo_restaurante/pages/conta/conta_hospede_view.dart';
+import 'package:bravo_restaurante/pages/conta/fechar_conta_view.dart';
 import 'package:bravo_restaurante/pages/pedido/registrar_pedido_view.dart';
 import 'package:flutter/material.dart';
 
@@ -41,12 +42,10 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  void _abrirTelaEmConstrucao(String nomeTela) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$nomeTela em construção'),
-        behavior: SnackBarBehavior.floating,
-      ),
+  void _abrirFecharConta() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const FecharContaView()),
     );
   }
 
@@ -84,9 +83,7 @@ class _HomeViewState extends State<HomeView> {
               abrirRegistrarPedido: _abrirRegistrarPedido,
               abrirLancarBebida: _abrirLancarBebida,
               abrirContaHospede: _abrirContaHospede,
-              abrirFecharConta: () {
-                _abrirTelaEmConstrucao('Fechar Conta');
-              },
+              abrirFecharConta: _abrirFecharConta,
             ),
           ],
         ),
@@ -104,7 +101,7 @@ class _HomeViewState extends State<HomeView> {
           } else if (index == 2) {
             _abrirContaHospede();
           } else if (index == 3) {
-            _abrirTelaEmConstrucao('Fechar Conta');
+            _abrirFecharConta();
           }
         },
         items: const [
@@ -168,7 +165,7 @@ class _HomeViewState extends State<HomeView> {
             title: const Text('Fechar Conta'),
             onTap: () {
               Navigator.pop(context);
-              _abrirTelaEmConstrucao('Fechar Conta');
+              _abrirFecharConta();
             },
           ),
           const Spacer(),
@@ -249,7 +246,7 @@ class _AcessosRapidosCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: _QuickButton(
-                    label: 'Registrar Pedido',
+                    label: 'Restaurante',
                     icon: Icons.receipt_long,
                     onTap: abrirRegistrarPedido,
                   ),
@@ -257,7 +254,7 @@ class _AcessosRapidosCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _QuickButton(
-                    label: 'Lançar Bebida',
+                    label: 'Bar',
                     icon: Icons.local_bar,
                     onTap: abrirLancarBebida,
                   ),

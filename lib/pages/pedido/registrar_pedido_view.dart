@@ -5,6 +5,7 @@ import 'package:bravo_restaurante/mvvm/pedido_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
+import 'package:bravo_restaurante/widgets/info_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -209,6 +210,13 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const InfoAlert(
+                          message:
+                              'Registre produtos consumidos e vincule o pedido a uma reserva aberta.',
+                        ),
+
+                        const SizedBox(height: 18),
+
                         _label('Reserva / Quarto'),
                         const SizedBox(height: 6),
                         _buildDropdownReserva(reservaVM),

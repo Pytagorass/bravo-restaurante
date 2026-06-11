@@ -118,7 +118,7 @@ class _LoginViewState extends State<LoginView> {
               const SizedBox(height: 4),
 
               const Text(
-                'Controle da lanchonete e restaurante do barco-hotel',
+                'Controle do restaurante e bar do barco-hotel',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: cinzaEscuro),
               ),

@@ -2,6 +2,7 @@ import 'package:bravo_restaurante/models/conta_consumo.dart';
 import 'package:bravo_restaurante/models/reserva.dart';
 import 'package:bravo_restaurante/mvvm/conta_consumo_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
+import 'package:bravo_restaurante/widgets/info_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -69,6 +70,13 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
                   child: ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
+                      const InfoAlert(
+                        message:
+                            'Consulte pedidos, bebidas e total acumulado de uma reserva aberta.',
+                      ),
+
+                      const SizedBox(height: 16),
+
                       _buildReservaDropdown(reservaVM),
                       const SizedBox(height: 16),
                       if (contaVM.isLoading)

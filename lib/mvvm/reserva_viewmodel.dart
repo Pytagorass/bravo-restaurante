@@ -28,6 +28,10 @@ class ReservaViewModel extends ChangeNotifier {
             ),
             quarto:id_quarto (
               numero_quarto
+            ),
+            conta_consumo (
+              id_conta,
+              status_conta
             )
           ''')
           .eq('status_reserva', 'Aberta')
@@ -35,14 +39,13 @@ class ReservaViewModel extends ChangeNotifier {
 
       reservas = response
           .map<Reserva>((item) => Reserva.fromMap(item))
+          .where((reserva) => reserva.possuiContaAberta)
           .toList();
-
-      debugPrint('Reservas abertas carregadas: ${reservas.length}');
 
       isLoading = false;
       notifyListeners();
+      debugPrint(response.toString());
     } catch (e) {
-      debugPrint('Erro ao carregar reservas: $e');
       mensagemErro = 'Erro ao carregar reservas: $e';
       isLoading = false;
       notifyListeners();

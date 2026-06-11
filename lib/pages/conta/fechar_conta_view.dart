@@ -1,0 +1,598 @@
+import 'package:bravo_restaurante/models/reserva.dart';
+import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
+import 'package:bravo_restaurante/widgets/info_alert.dart';
+import 'package:flutter/material.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class FecharContaView extends StatefulWidget {
+  const FecharContaView({super.key});
+
+  @override
+  State<FecharContaView> createState() => _FecharContaViewState();
+}
+
+class _FecharContaViewState extends State<FecharContaView> {
+  static const Color verdeEscuro = Color(0xFF26522C);
+  static const Color verdeMedio = Color(0xFF628D38);
+  static const Color cinzaEscuro = Color(0xFF30332E);
+
+  final SupabaseClient _supabase = Supabase.instance.client;
+
+  Reserva? reservaSelecionada;
+
+  bool carregandoConta = false;
+  String? mensagemErro;
+
+  List<Map<String, dynamic>> pedidos = [];
+  List<Map<String, dynamic>> bebidas = [];
+
+  double totalConta = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      context.read<ReservaViewModel>().carregarReservasAbertas();
+    });
+  }
+
+  Future<void> _carregarResumoConta(Reserva reserva) async {
+    setState(() {
+      carregandoConta = true;
+      mensagemErro = null;
+      pedidos = [];
+      bebidas = [];
+      totalConta = 0.0;
+    });
+
+    try {
+      final pedidosResponse = await _supabase
+          .from('pedido')
+          .select('''
+            id_pedido,
+            total_pedido,
+            status_pedido,
+            item_pedido (
+              quantidade,
+              subtotal,
+              produto:id_produto (
+                nome_produto,
+                preco
+              )
+            )
+          ''')
+          .eq('id_conta', reserva.idConta)
+          .neq('status_pedido', 'Cancelado');
+
+      final bebidasResponse = await _supabase
+          .from('bebida_lancada')
+          .select('''
+            id_bebida_lancada,
+            quantidade,
+            subtotal,
+            produto:id_produto (
+              nome_produto,
+              preco
+            )
+          ''')
+          .eq('id_conta', reserva.idConta);
+
+      final contaResponse = await _supabase
+          .from('conta_consumo')
+          .select('total_acumulado')
+          .eq('id_conta', reserva.idConta)
+          .maybeSingle();
+
+      setState(() {
+        pedidos = List<Map<String, dynamic>>.from(pedidosResponse);
+        bebidas = List<Map<String, dynamic>>.from(bebidasResponse);
+        totalConta =
+            (contaResponse?['total_acumulado'] as num?)?.toDouble() ?? 0.0;
+        carregandoConta = false;
+      });
+    } catch (e) {
+      setState(() {
+        mensagemErro = 'Erro ao carregar conta: $e';
+        carregandoConta = false;
+      });
+    }
+  }
+
+  Future<void> _fecharConta() async {
+    if (reservaSelecionada == null) {
+      _mostrarMensagem('Selecione uma reserva.');
+      return;
+    }
+
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Fechar conta'),
+          content: Text(
+            'Deseja realmente fechar a conta no valor de R\$ ${totalConta.toStringAsFixed(2)}?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: verdeEscuro,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Confirmar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmar != true) return;
+
+    try {
+      await _supabase
+          .from('conta_consumo')
+          .update({
+            'status_conta': 'Fechada',
+            'closed_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id_conta', reservaSelecionada!.idConta);
+
+      await _supabase
+          .from('reserva')
+          .update({'status_reserva': 'Fechada'})
+          .eq('id_reserva', reservaSelecionada!.idReserva);
+
+      if (!mounted) return;
+
+      _mostrarMensagem('Conta fechada com sucesso.');
+
+      setState(() {
+        reservaSelecionada = null;
+        pedidos = [];
+        bebidas = [];
+        totalConta = 0.0;
+      });
+
+      context.read<ReservaViewModel>().carregarReservasAbertas();
+    } catch (e) {
+      _mostrarMensagem('Erro ao fechar conta: $e');
+    }
+  }
+
+  void _mostrarMensagem(String mensagem) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensagem), behavior: SnackBarBehavior.floating),
+    );
+  }
+
+  Future<void> _gerarRelatorioConta() async {
+    if (reservaSelecionada == null) {
+      _mostrarMensagem('Selecione uma reserva para gerar o relatório.');
+      return;
+    }
+
+    final pdf = pw.Document();
+    final reserva = reservaSelecionada!;
+
+    pdf.addPage(
+      pw.MultiPage(
+        build: (context) => [
+          pw.Text(
+            'BRAVO Restaurante / Lanchonete',
+            style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.SizedBox(height: 8),
+          pw.Text('Relatório da Conta do Hóspede'),
+          pw.Divider(),
+
+          pw.Text('Hóspede: ${reserva.nomeHospede}'),
+          pw.Text('Quarto: ${reserva.numeroQuarto}'),
+          pw.Text('Status da Conta: ${reserva.statusConta}'),
+
+          pw.SizedBox(height: 16),
+
+          pw.Text(
+            'Pedidos',
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          ),
+
+          if (pedidos.isEmpty)
+            pw.Text('Nenhum pedido registrado.')
+          else
+            ...pedidos.map((pedido) {
+              final itens = pedido['item_pedido'] as List<dynamic>? ?? [];
+              final totalPedido =
+                  (pedido['total_pedido'] as num?)?.toDouble() ?? 0.0;
+
+              return pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.SizedBox(height: 8),
+                  pw.Text(
+                    'Pedido ${pedido['id_pedido'].toString().substring(0, 8)}',
+                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                  ),
+                  ...itens.map((item) {
+                    final produto =
+                        item['produto'] as Map<String, dynamic>? ?? {};
+                    final subtotal =
+                        (item['subtotal'] as num?)?.toDouble() ?? 0.0;
+
+                    return pw.Text(
+                      '${item['quantidade']}x ${produto['nome_produto']} - R\$ ${subtotal.toStringAsFixed(2)}',
+                    );
+                  }),
+                  pw.Text(
+                    'Total do pedido: R\$ ${totalPedido.toStringAsFixed(2)}',
+                  ),
+                ],
+              );
+            }),
+
+          pw.SizedBox(height: 16),
+
+          pw.Text(
+            'Bebidas Lançadas',
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          ),
+
+          if (bebidas.isEmpty)
+            pw.Text('Nenhuma bebida lançada.')
+          else
+            ...bebidas.map((bebida) {
+              final produto = bebida['produto'] as Map<String, dynamic>? ?? {};
+              final subtotal = (bebida['subtotal'] as num?)?.toDouble() ?? 0.0;
+
+              return pw.Text(
+                '${bebida['quantidade']}x ${produto['nome_produto']} - R\$ ${subtotal.toStringAsFixed(2)}',
+              );
+            }),
+
+          pw.Divider(),
+
+          pw.Align(
+            alignment: pw.Alignment.centerRight,
+            child: pw.Text(
+              'TOTAL: R\$ ${totalConta.toStringAsFixed(2)}',
+              style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ReservaViewModel>(
+      builder: (context, reservaVM, child) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            title: const Text(
+              'Fechar Conta',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            backgroundColor: verdeEscuro,
+            foregroundColor: Colors.white,
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const InfoAlert(
+                  message:
+                      'Revise o consumo antes de fechar a conta da reserva.',
+                ),
+
+                const SizedBox(height: 18),
+
+                _label('Selecione a Reserva'),
+                const SizedBox(height: 6),
+                _buildDropdownReserva(reservaVM),
+
+                const SizedBox(height: 18),
+
+                if (reservaSelecionada != null) _buildCardReserva(),
+
+                if (carregandoConta)
+                  const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+
+                if (mensagemErro != null)
+                  Text(
+                    mensagemErro!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+
+                if (!carregandoConta && reservaSelecionada != null) ...[
+                  const SizedBox(height: 18),
+                  _buildResumoConta(),
+                  const SizedBox(height: 18),
+                  _buildBotaoFecharConta(),
+                  const SizedBox(height: 10),
+                  _buildBotaoComprovante(),
+                  const SizedBox(height: 10),
+                  _buildAvisoFinal(),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _label(String texto) {
+    return Text(
+      texto,
+      style: const TextStyle(fontWeight: FontWeight.w600, color: cinzaEscuro),
+    );
+  }
+
+  Widget _buildDropdownReserva(ReservaViewModel reservaVM) {
+    if (reservaVM.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (reservaVM.mensagemErro != null) {
+      return Text(
+        reservaVM.mensagemErro!,
+        style: const TextStyle(color: Colors.red),
+      );
+    }
+
+    if (reservaVM.reservas.isEmpty) {
+      return const Text(
+        'Nenhuma reserva aberta encontrada.',
+        style: TextStyle(color: Colors.red),
+      );
+    }
+
+    return DropdownButtonFormField<Reserva>(
+      value: reservaSelecionada,
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      ),
+      hint: const Text('Selecione a reserva'),
+      items: reservaVM.reservas.map((reserva) {
+        return DropdownMenuItem<Reserva>(
+          value: reserva,
+          child: Text(reserva.descricaoDropdown),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          reservaSelecionada = value;
+        });
+
+        if (value != null) {
+          _carregarResumoConta(value);
+        }
+      },
+    );
+  }
+
+  Widget _buildCardReserva() {
+    final reserva = reservaSelecionada!;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F6F3),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Reserva', style: TextStyle(fontSize: 12)),
+          Text(
+            reserva.nomeHospede,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: verdeEscuro,
+            ),
+          ),
+          Text('Quarto ${reserva.numeroQuarto}'),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.green.shade100,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              reserva.statusConta,
+              style: const TextStyle(
+                fontSize: 12,
+                color: verdeEscuro,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResumoConta() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Resumo da ContaConsumo',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: cinzaEscuro,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        const Text('Pedidos', style: TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
+
+        if (pedidos.isEmpty)
+          const Text('Nenhum pedido registrado.')
+        else
+          ...pedidos.map((pedido) => _buildPedidoCard(pedido)),
+
+        const SizedBox(height: 14),
+
+        const Text('Bebidas', style: TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
+
+        if (bebidas.isEmpty)
+          const Text('Nenhuma bebida lançada.')
+        else
+          ...bebidas.map((bebida) => _buildBebidaCard(bebida)),
+
+        const SizedBox(height: 14),
+
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: verdeEscuro,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Total Acumulado na ContaConsumo',
+                style: TextStyle(color: Colors.white),
+              ),
+              Text(
+                'R\$ ${totalConta.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPedidoCard(Map<String, dynamic> pedido) {
+    final total = (pedido['total_pedido'] as num?)?.toDouble() ?? 0.0;
+    final itens = pedido['item_pedido'] as List<dynamic>? ?? [];
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Pedido: ${pedido['id_pedido'].toString().substring(0, 8)}'),
+            const SizedBox(height: 4),
+            ...itens.map((item) {
+              final produto = item['produto'] as Map<String, dynamic>? ?? {};
+              return Text(
+                '${item['quantidade']}x ${produto['nome_produto']} - R\$ ${(item['subtotal'] as num).toDouble().toStringAsFixed(2)}',
+              );
+            }),
+            const SizedBox(height: 6),
+            Text(
+              'Total: R\$ ${total.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: verdeEscuro,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBebidaCard(Map<String, dynamic> bebida) {
+    final produto = bebida['produto'] as Map<String, dynamic>? ?? {};
+    final subtotal = (bebida['subtotal'] as num?)?.toDouble() ?? 0.0;
+
+    return Card(
+      child: ListTile(
+        title: Text('${bebida['quantidade']}x ${produto['nome_produto']}'),
+        trailing: Text(
+          'R\$ ${subtotal.toStringAsFixed(2)}',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: verdeEscuro,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBotaoFecharConta() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton.icon(
+        onPressed: _fecharConta,
+        icon: const Icon(Icons.attach_money, color: Colors.white),
+        label: const Text(
+          'Fechar Conta',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: verdeEscuro,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBotaoComprovante() {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: OutlinedButton.icon(
+        onPressed: _gerarRelatorioConta,
+        icon: const Icon(Icons.description_outlined),
+        label: const Text('Gerar Comprovante'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: verdeEscuro,
+          side: const BorderSide(color: verdeEscuro),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvisoFinal() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEAF3FF),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.blue.shade100),
+      ),
+      child: const Text(
+        'Ao fechar a conta, nenhum novo pedido ou bebida poderá ser adicionado à ContaConsumo.',
+        style: TextStyle(fontSize: 13),
+      ),
+    );
+  }
+}
