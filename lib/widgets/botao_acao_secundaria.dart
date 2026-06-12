@@ -1,8 +1,8 @@
-import 'package:bravo_restaurante/widgets/app_colors.dart';
+import 'package:bravo_restaurante/widgets/cores_app.dart';
 import 'package:flutter/material.dart';
 
 // Botao secundario padrao para acoes auxiliares, cancelamento ou comprovante.
-class SecondaryActionButton extends StatelessWidget {
+class BotaoAcaoSecundaria extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback? onPressed;
@@ -11,13 +11,13 @@ class SecondaryActionButton extends StatelessWidget {
   final double height;
   final double borderRadius;
 
-  const SecondaryActionButton({
+  const BotaoAcaoSecundaria({
     super.key,
     required this.label,
     required this.icon,
     required this.onPressed,
-    this.foregroundColor = AppColors.verdeEscuro,
-    this.borderColor = AppColors.verdeEscuro,
+    this.foregroundColor = CoresAPP.verdeEscuro,
+    this.borderColor = CoresAPP.verdeEscuro,
     this.height = 48,
     this.borderRadius = 8,
   });

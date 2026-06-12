@@ -5,7 +5,7 @@ import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
 import 'package:bravo_restaurante/pages/login/login_view.dart';
-import 'package:bravo_restaurante/widgets/app_colors.dart';
+import 'package:bravo_restaurante/widgets/cores_app.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -61,11 +61,11 @@ class BravoApp extends StatelessWidget {
 
       theme: ThemeData(
         // Cor principal usada nas barras, botoes e componentes do app.
-        primaryColor: AppColors.verdeEscuro,
+        primaryColor: CoresAPP.verdeEscuro,
 
         scaffoldBackgroundColor: Colors.white,
 
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.verdeEscuro),
+        colorScheme: ColorScheme.fromSeed(seedColor: CoresAPP.verdeEscuro),
       ),
 
       // A primeira tela exibida quando o aplicativo abre.

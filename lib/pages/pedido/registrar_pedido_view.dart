@@ -5,13 +5,13 @@ import 'package:bravo_restaurante/mvvm/pedido_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
-import 'package:bravo_restaurante/widgets/app_colors.dart';
-import 'package:bravo_restaurante/widgets/form_label.dart';
-import 'package:bravo_restaurante/widgets/info_alert.dart';
-import 'package:bravo_restaurante/widgets/primary_action_button.dart';
-import 'package:bravo_restaurante/widgets/quantity_selector.dart';
+import 'package:bravo_restaurante/widgets/cores_app.dart';
+import 'package:bravo_restaurante/widgets/formulario.dart';
+import 'package:bravo_restaurante/widgets/alerta_informacoes_pagina.dart';
+import 'package:bravo_restaurante/widgets/botao_acao_principal.dart';
+import 'package:bravo_restaurante/widgets/seletor_quantidade.dart';
 import 'package:bravo_restaurante/widgets/reserva_dropdown.dart';
-import 'package:bravo_restaurante/widgets/secondary_action_button.dart';
+import 'package:bravo_restaurante/widgets/botao_acao_secundaria.dart';
 import 'package:bravo_restaurante/widgets/total_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -198,7 +198,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.verdeEscuro,
+                    backgroundColor: CoresAPP.verdeEscuro,
                     foregroundColor: Colors.white,
                   ),
                   onPressed: () => Navigator.pop(context, novaQuantidade),
@@ -315,7 +315,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
               'Registrar Pedido',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: AppColors.verdeEscuro,
+            backgroundColor: CoresAPP.verdeEscuro,
             foregroundColor: Colors.white,
           ),
           body: carregando
@@ -328,28 +328,28 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Alerta de contexto no inicio do formulario.
-                        const InfoAlert(
+                        const AlertaInformacoesPagina(
                           message:
                               'Registre o pedido e vincule a uma reserva aberta.',
                         ),
 
                         const SizedBox(height: 18),
 
-                        const FormLabel('Reserva / Quarto'),
+                        const Formulario('Reserva / Quarto'),
                         const SizedBox(height: 6),
                         _buildDropdownReserva(reservaVM),
 
                         const SizedBox(height: 18),
 
-                        const FormLabel('Produto'),
+                        const Formulario('Produto'),
                         const SizedBox(height: 6),
                         _buildDropdownProduto(produtoVM),
 
                         const SizedBox(height: 18),
 
-                        const FormLabel('Quantidade'),
+                        const Formulario('Quantidade'),
                         const SizedBox(height: 6),
-                        QuantitySelector(
+                        SeletorQuantide(
                           quantidade: quantidade,
                           habilitado: produtoSelecionado != null,
                           aoAumentar: _aumentarQuantidade,
@@ -358,7 +358,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
 
                         const SizedBox(height: 18),
 
-                        const FormLabel('Observação'),
+                        const Formulario('Observação'),
                         const SizedBox(height: 6),
                         _buildObservacaoField(),
 
@@ -374,7 +374,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: AppColors.cinzaEscuro,
+                              color: CoresAPP.cinzaEscuro,
                             ),
                           ),
 
@@ -412,27 +412,24 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                                         'R\$ ${item.subtotal.toStringAsFixed(2)}',
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: AppColors.verdeEscuro,
+                                          color: CoresAPP.verdeEscuro,
                                         ),
                                       ),
                                       IconButton(
                                         tooltip: 'Editar quantidade',
                                         onPressed: salvandoPedido
                                             ? null
-                                            : () => _editarQuantidadeItem(
-                                                index,
-                                              ),
+                                            : () =>
+                                                  _editarQuantidadeItem(index),
                                         icon: const Icon(Icons.edit_outlined),
-                                        color: AppColors.verdeEscuro,
+                                        color: CoresAPP.verdeEscuro,
                                       ),
                                       IconButton(
                                         tooltip: 'Cancelar item',
                                         onPressed: salvandoPedido
                                             ? null
                                             : () => _removerItemPedido(index),
-                                        icon: const Icon(
-                                          Icons.delete_outline,
-                                        ),
+                                        icon: const Icon(Icons.delete_outline),
                                         color: Colors.red,
                                       ),
                                     ],
@@ -448,7 +445,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                             'Use editar para alterar a quantidade ou cancelar para remover um item antes de confirmar.',
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.cinzaEscuro,
+                              color: CoresAPP.cinzaEscuro,
                             ),
                           ),
 
@@ -462,7 +459,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
 
                           const SizedBox(height: 14),
 
-                          PrimaryActionButton(
+                          BotaoAcaoPrincipal(
                             // Confirmacao final grava ContaConsumo, pedido e item_pedido.
                             label: 'Confirmar e Vincular à Conta do Cliente',
                             icon: Icons.check,
@@ -587,11 +584,11 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
     // O botao so habilita quando reserva e produto ja foram selecionados.
     final habilitado = reservaSelecionada != null && produtoSelecionado != null;
 
-    return PrimaryActionButton(
+    return BotaoAcaoPrincipal(
       label: 'Adicionar Item',
       icon: Icons.add,
       onPressed: habilitado ? _adicionarItem : null,
-      backgroundColor: AppColors.verdeMedio,
+      backgroundColor: CoresAPP.verdeMedio,
     );
   }
 
@@ -599,7 +596,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
     // Cancela o pedido em montagem sem enviar nada para o banco.
     final habilitado = itensPedido.isNotEmpty && !salvandoPedido;
 
-    return SecondaryActionButton(
+    return BotaoAcaoSecundaria(
       label: 'Cancelar Pedido',
       icon: Icons.close,
       onPressed: habilitado ? _cancelarPedido : null,

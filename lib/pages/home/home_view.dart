@@ -2,7 +2,7 @@ import 'package:bravo_restaurante/pages/bebida/lancar_bebida_view.dart';
 import 'package:bravo_restaurante/pages/conta/conta_hospede_view.dart';
 import 'package:bravo_restaurante/pages/conta/fechar_conta_view.dart';
 import 'package:bravo_restaurante/pages/pedido/registrar_pedido_view.dart';
-import 'package:bravo_restaurante/widgets/app_colors.dart';
+import 'package:bravo_restaurante/widgets/cores_app.dart';
 import 'package:flutter/material.dart';
 
 class HomeView extends StatefulWidget {
@@ -64,7 +64,7 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('BRAVO Restaurante'),
-        backgroundColor: AppColors.verdeEscuro,
+        backgroundColor: CoresAPP.verdeEscuro,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -96,8 +96,8 @@ class _HomeViewState extends State<HomeView> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        selectedItemColor: AppColors.verdeEscuro,
-        unselectedItemColor: AppColors.cinzaEscuro.withOpacity(0.6),
+        selectedItemColor: CoresAPP.verdeEscuro,
+        unselectedItemColor: CoresAPP.cinzaEscuro.withOpacity(0.6),
         showUnselectedLabels: true,
         onTap: (index) {
           // Atualiza o item selecionado e abre a tela ligada ao indice tocado.
@@ -139,12 +139,12 @@ class _HomeViewState extends State<HomeView> {
       child: Column(
         children: [
           const UserAccountsDrawerHeader(
-            decoration: BoxDecoration(color: AppColors.verdeEscuro),
+            decoration: BoxDecoration(color: CoresAPP.verdeEscuro),
             accountName: Text('Usuário Teste'),
             accountEmail: Text('teste@bravo.com'),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Colors.white,
-              child: Icon(Icons.person, color: AppColors.verdeEscuro),
+              child: Icon(Icons.person, color: CoresAPP.verdeEscuro),
             ),
           ),
           ListTile(
@@ -200,7 +200,7 @@ class _ResumoCard extends StatelessWidget {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppColors.verdeMedio,
+              backgroundColor: CoresAPP.verdeMedio,
               child: Icon(Icons.restaurant, color: Colors.white),
             ),
             SizedBox(width: 12),
@@ -209,7 +209,7 @@ class _ResumoCard extends StatelessWidget {
                 'Controle de pedidos e consumo do barco-hotel',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.verdeEscuro,
+                  color: CoresAPP.verdeEscuro,
                 ),
               ),
             ),
@@ -311,17 +311,17 @@ class _QuickButton extends StatelessWidget {
     // Botao reutilizavel dos atalhos da Home.
     return OutlinedButton.icon(
       onPressed: onTap,
-      icon: Icon(icon, color: AppColors.verdeMedio),
+      icon: Icon(icon, color: CoresAPP.verdeMedio),
       label: Text(
         label,
         textAlign: TextAlign.center,
         style: const TextStyle(
-          color: AppColors.verdeEscuro,
+          color: CoresAPP.verdeEscuro,
           fontWeight: FontWeight.w600,
         ),
       ),
       style: OutlinedButton.styleFrom(
-        side: BorderSide(color: AppColors.verdeMedio.withOpacity(0.6)),
+        side: BorderSide(color: CoresAPP.verdeMedio.withOpacity(0.6)),
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),

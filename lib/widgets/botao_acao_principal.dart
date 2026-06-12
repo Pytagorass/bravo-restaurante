@@ -1,8 +1,8 @@
-import 'package:bravo_restaurante/widgets/app_colors.dart';
+import 'package:bravo_restaurante/widgets/cores_app.dart';
 import 'package:flutter/material.dart';
 
 // Botao principal padrao para acoes de confirmacao ou salvamento.
-class PrimaryActionButton extends StatelessWidget {
+class BotaoAcaoPrincipal extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback? onPressed;
@@ -10,12 +10,12 @@ class PrimaryActionButton extends StatelessWidget {
   final double height;
   final double borderRadius;
 
-  const PrimaryActionButton({
+  const BotaoAcaoPrincipal({
     super.key,
     required this.label,
     required this.icon,
     required this.onPressed,
-    this.backgroundColor = AppColors.verdeEscuro,
+    this.backgroundColor = CoresAPP.verdeEscuro,
     this.height = 50,
     this.borderRadius = 8,
   });

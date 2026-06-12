@@ -1,12 +1,12 @@
 import 'package:bravo_restaurante/models/reserva.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
-import 'package:bravo_restaurante/widgets/app_colors.dart';
+import 'package:bravo_restaurante/widgets/cores_app.dart';
 import 'package:bravo_restaurante/widgets/consumo_card.dart';
-import 'package:bravo_restaurante/widgets/form_label.dart';
-import 'package:bravo_restaurante/widgets/info_alert.dart';
-import 'package:bravo_restaurante/widgets/primary_action_button.dart';
+import 'package:bravo_restaurante/widgets/formulario.dart';
+import 'package:bravo_restaurante/widgets/alerta_informacoes_pagina.dart';
+import 'package:bravo_restaurante/widgets/botao_acao_principal.dart';
 import 'package:bravo_restaurante/widgets/reserva_dropdown.dart';
-import 'package:bravo_restaurante/widgets/secondary_action_button.dart';
+import 'package:bravo_restaurante/widgets/botao_acao_secundaria.dart';
 import 'package:bravo_restaurante/widgets/total_card.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -142,7 +142,7 @@ class _FecharContaViewState extends State<FecharContaView> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.verdeEscuro,
+                backgroundColor: CoresAPP.verdeEscuro,
                 foregroundColor: Colors.white,
               ),
               onPressed: () => Navigator.pop(context, true),
@@ -343,7 +343,7 @@ class _FecharContaViewState extends State<FecharContaView> {
               'Fechar Conta',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: AppColors.verdeEscuro,
+            backgroundColor: CoresAPP.verdeEscuro,
             foregroundColor: Colors.white,
           ),
           body: SingleChildScrollView(
@@ -351,14 +351,14 @@ class _FecharContaViewState extends State<FecharContaView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const InfoAlert(
+                const AlertaInformacoesPagina(
                   message:
                       'Revise o consumo antes de fechar a conta da reserva.',
                 ),
 
                 const SizedBox(height: 18),
 
-                const FormLabel('Selecione a Reserva'),
+                const Formulario('Selecione a Reserva'),
                 const SizedBox(height: 6),
                 _buildDropdownReserva(reservaVM),
 
@@ -441,7 +441,7 @@ class _FecharContaViewState extends State<FecharContaView> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
-              color: AppColors.verdeEscuro,
+              color: CoresAPP.verdeEscuro,
             ),
           ),
           Text('Quarto ${reserva.numeroQuarto}'),
@@ -456,7 +456,7 @@ class _FecharContaViewState extends State<FecharContaView> {
               reserva.statusConta,
               style: const TextStyle(
                 fontSize: 12,
-                color: AppColors.verdeEscuro,
+                color: CoresAPP.verdeEscuro,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -475,7 +475,7 @@ class _FecharContaViewState extends State<FecharContaView> {
           'Resumo da Conta do Cliente',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.cinzaEscuro,
+            color: CoresAPP.cinzaEscuro,
             fontSize: 16,
           ),
         ),
@@ -507,7 +507,7 @@ class _FecharContaViewState extends State<FecharContaView> {
         TotalCard(
           titulo: 'Total Acumulado na Conta do Cliente',
           valor: totalConta,
-          backgroundColor: AppColors.verdeEscuro,
+          backgroundColor: CoresAPP.verdeEscuro,
           valorFontSize: 26,
         ),
       ],
@@ -548,7 +548,7 @@ class _FecharContaViewState extends State<FecharContaView> {
 
   Widget _buildBotaoFecharConta() {
     // Botao principal que inicia o fluxo de confirmacao e fechamento da conta.
-    return PrimaryActionButton(
+    return BotaoAcaoPrincipal(
       label: 'Fechar Conta',
       icon: Icons.attach_money,
       onPressed: _fecharConta,
@@ -557,7 +557,7 @@ class _FecharContaViewState extends State<FecharContaView> {
 
   Widget _buildBotaoComprovante() {
     // Botao secundario que gera o comprovante em PDF da conta.
-    return SecondaryActionButton(
+    return BotaoAcaoSecundaria(
       label: 'Gerar Comprovante',
       icon: Icons.description_outlined,
       onPressed: _gerarRelatorioConta,

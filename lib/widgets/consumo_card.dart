@@ -1,4 +1,4 @@
-import 'package:bravo_restaurante/widgets/app_colors.dart';
+import 'package:bravo_restaurante/widgets/cores_app.dart';
 import 'package:flutter/material.dart';
 
 // Card padrao para exibir um consumo com data, itens, observacao e total.
@@ -43,7 +43,7 @@ class ConsumoCard extends StatelessWidget {
               '$totalLabel R\$ ${total.toStringAsFixed(2)}',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                color: AppColors.verdeEscuro,
+                color: CoresAPP.verdeEscuro,
               ),
             ),
           ],

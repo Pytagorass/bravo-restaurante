@@ -1,4 +1,4 @@
-import 'package:bravo_restaurante/widgets/app_colors.dart';
+import 'package:bravo_restaurante/widgets/cores_app.dart';
 import 'package:flutter/material.dart';
 
 // Card padrao para destacar valores totais antes ou depois de uma operacao.
@@ -12,7 +12,7 @@ class TotalCard extends StatelessWidget {
     super.key,
     required this.titulo,
     required this.valor,
-    this.backgroundColor = AppColors.verdeMedio,
+    this.backgroundColor = CoresAPP.verdeMedio,
     this.valorFontSize = 24,
   });
 

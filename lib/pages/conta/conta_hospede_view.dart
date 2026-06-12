@@ -2,9 +2,9 @@ import 'package:bravo_restaurante/models/conta_consumo.dart';
 import 'package:bravo_restaurante/models/reserva.dart';
 import 'package:bravo_restaurante/mvvm/conta_consumo_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
-import 'package:bravo_restaurante/widgets/app_colors.dart';
+import 'package:bravo_restaurante/widgets/cores_app.dart';
 import 'package:bravo_restaurante/widgets/consumo_card.dart';
-import 'package:bravo_restaurante/widgets/info_alert.dart';
+import 'package:bravo_restaurante/widgets/alerta_informacoes_pagina.dart';
 import 'package:bravo_restaurante/widgets/reserva_dropdown.dart';
 import 'package:bravo_restaurante/widgets/total_card.dart';
 import 'package:flutter/material.dart';
@@ -72,7 +72,7 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
               'Conta do Hospede',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: AppColors.verdeEscuro,
+            backgroundColor: CoresAPP.verdeEscuro,
             foregroundColor: Colors.white,
           ),
           body: reservaVM.isLoading
@@ -88,7 +88,7 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
                     padding: const EdgeInsets.all(16),
                     children: [
                       // Aviso inicial explicando o objetivo desta consulta.
-                      const InfoAlert(
+                      const AlertaInformacoesPagina(
                         message:
                             'Consulte pedidos, bebidas e total acumulado de uma reserva aberta.',
                       ),

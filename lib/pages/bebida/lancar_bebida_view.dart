@@ -4,13 +4,13 @@ import 'package:bravo_restaurante/mvvm/lib/mvvm/bebida_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
-import 'package:bravo_restaurante/widgets/app_colors.dart';
-import 'package:bravo_restaurante/widgets/form_label.dart';
-import 'package:bravo_restaurante/widgets/info_alert.dart';
-import 'package:bravo_restaurante/widgets/primary_action_button.dart';
-import 'package:bravo_restaurante/widgets/quantity_selector.dart';
+import 'package:bravo_restaurante/widgets/cores_app.dart';
+import 'package:bravo_restaurante/widgets/formulario.dart';
+import 'package:bravo_restaurante/widgets/alerta_informacoes_pagina.dart';
+import 'package:bravo_restaurante/widgets/botao_acao_principal.dart';
+import 'package:bravo_restaurante/widgets/seletor_quantidade.dart';
 import 'package:bravo_restaurante/widgets/reserva_dropdown.dart';
-import 'package:bravo_restaurante/widgets/secondary_action_button.dart';
+import 'package:bravo_restaurante/widgets/botao_acao_secundaria.dart';
 import 'package:bravo_restaurante/widgets/total_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -156,7 +156,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
               'Lançar Bebida na Conta',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: AppColors.verdeEscuro,
+            backgroundColor: CoresAPP.verdeEscuro,
             foregroundColor: Colors.white,
           ),
 
@@ -169,28 +169,28 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const InfoAlert(
+                        const AlertaInformacoesPagina(
                           message:
                               'Lançamento rápido de bebida direto na Conta do Cliente.',
                         ),
 
                         const SizedBox(height: 18),
 
-                        const FormLabel('Reserva / Quarto'),
+                        const Formulario('Reserva / Quarto'),
                         const SizedBox(height: 6),
                         _buildDropdownReserva(reservaVM),
 
                         const SizedBox(height: 18),
 
-                        const FormLabel('Bebida'),
+                        const Formulario('Bebida'),
                         const SizedBox(height: 6),
                         _buildDropdownBebida(bebidas),
 
                         const SizedBox(height: 18),
 
-                        const FormLabel('Quantidade'),
+                        const Formulario('Quantidade'),
                         const SizedBox(height: 6),
-                        QuantitySelector(
+                        SeletorQuantide(
                           quantidade: quantidade,
                           habilitado: bebidaSelecionada != null,
                           aoAumentar: _aumentarQuantidade,
@@ -199,7 +199,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
 
                         const SizedBox(height: 18),
 
-                        const FormLabel('Valor Unitário'),
+                        const Formulario('Valor Unitário'),
                         const SizedBox(height: 6),
                         _buildValorUnitario(),
 
@@ -327,7 +327,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
     // Habilita o botao apenas quando reserva e bebida foram selecionadas.
     final habilitado = reservaSelecionada != null && bebidaSelecionada != null;
 
-    return PrimaryActionButton(
+    return BotaoAcaoPrincipal(
       label: 'Lançar na Conta do Cliente',
       icon: Icons.check,
       onPressed: habilitado ? _lancarBebida : null,
@@ -339,7 +339,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
 
     // Habilita o botao apenas quando reserva e bebida foram selecionadas.
     final habilitado = reservaSelecionada != null && bebidaSelecionada != null;
-    return SecondaryActionButton(
+    return BotaoAcaoSecundaria(
       label: 'Cancelar Lançamento',
       icon: Icons.close,
       onPressed: habilitado ? _cancelarLancamento : null,

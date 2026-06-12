@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
 import 'package:bravo_restaurante/pages/home/home_view.dart';
-import 'package:bravo_restaurante/widgets/app_colors.dart';
+import 'package:bravo_restaurante/widgets/cores_app.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -115,7 +115,7 @@ class _LoginViewState extends State<LoginView> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.verdeEscuro,
+                  color: CoresAPP.verdeEscuro,
                 ),
               ),
 
@@ -124,7 +124,7 @@ class _LoginViewState extends State<LoginView> {
               const Text(
                 'Controle do restaurante e bar do barco-hotel',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.cinzaEscuro),
+                style: TextStyle(color: CoresAPP.cinzaEscuro),
               ),
 
               const SizedBox(height: 32),
@@ -225,7 +225,7 @@ class _LoginViewState extends State<LoginView> {
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.verdeEscuro,
+                              backgroundColor: CoresAPP.verdeEscuro,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -244,7 +244,7 @@ class _LoginViewState extends State<LoginView> {
               Text(
                 'BRAVO • Barco-Hotel',
                 style: TextStyle(
-                  color: AppColors.verdeMedio,
+                  color: CoresAPP.verdeMedio,
                   fontWeight: FontWeight.w600,
                 ),
               ),
