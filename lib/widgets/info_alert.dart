@@ -1,3 +1,4 @@
+import 'package:bravo_restaurante/widgets/app_colors.dart';
 import 'package:flutter/material.dart';
 
 // Widget reutilizavel para mostrar mensagens informativas no topo das telas.
@@ -13,8 +14,6 @@ class InfoAlert extends StatelessWidget {
     required this.message,
     this.icon = Icons.info_outline,
   });
-
-  static const Color _textColor = Color(0xFF30332E);
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +36,7 @@ class InfoAlert extends StatelessWidget {
             child: Text(
               message,
               style: const TextStyle(
-                color: _textColor,
+                color: AppColors.cinzaEscuro,
                 fontWeight: FontWeight.w500,
               ),
             ),

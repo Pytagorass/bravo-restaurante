@@ -2,6 +2,7 @@ import 'package:bravo_restaurante/pages/bebida/lancar_bebida_view.dart';
 import 'package:bravo_restaurante/pages/conta/conta_hospede_view.dart';
 import 'package:bravo_restaurante/pages/conta/fechar_conta_view.dart';
 import 'package:bravo_restaurante/pages/pedido/registrar_pedido_view.dart';
+import 'package:bravo_restaurante/widgets/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class HomeView extends StatefulWidget {
@@ -12,9 +13,6 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  static const Color verdeEscuro = Color(0xFF26522C);
-  static const Color cinzaEscuro = Color(0xFF30332E);
-
   // Controla qual item da barra inferior esta selecionado.
   int _selectedIndex = 0;
 
@@ -66,7 +64,7 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('BRAVO Restaurante'),
-        backgroundColor: verdeEscuro,
+        backgroundColor: AppColors.verdeEscuro,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -98,8 +96,8 @@ class _HomeViewState extends State<HomeView> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        selectedItemColor: verdeEscuro,
-        unselectedItemColor: cinzaEscuro.withOpacity(0.6),
+        selectedItemColor: AppColors.verdeEscuro,
+        unselectedItemColor: AppColors.cinzaEscuro.withOpacity(0.6),
         showUnselectedLabels: true,
         onTap: (index) {
           // Atualiza o item selecionado e abre a tela ligada ao indice tocado.
@@ -141,12 +139,12 @@ class _HomeViewState extends State<HomeView> {
       child: Column(
         children: [
           const UserAccountsDrawerHeader(
-            decoration: BoxDecoration(color: verdeEscuro),
+            decoration: BoxDecoration(color: AppColors.verdeEscuro),
             accountName: Text('Usuário Teste'),
             accountEmail: Text('teste@bravo.com'),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Colors.white,
-              child: Icon(Icons.person, color: verdeEscuro),
+              child: Icon(Icons.person, color: AppColors.verdeEscuro),
             ),
           ),
           ListTile(
@@ -191,9 +189,6 @@ class _HomeViewState extends State<HomeView> {
 }
 
 class _ResumoCard extends StatelessWidget {
-  static const Color verdeEscuro = Color(0xFF26522C);
-  static const Color verdeMedio = Color(0xFF628D38);
-
   @override
   Widget build(BuildContext context) {
     // Card informativo exibido no topo da Home.
@@ -205,7 +200,7 @@ class _ResumoCard extends StatelessWidget {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: verdeMedio,
+              backgroundColor: AppColors.verdeMedio,
               child: Icon(Icons.restaurant, color: Colors.white),
             ),
             SizedBox(width: 12),
@@ -214,7 +209,7 @@ class _ResumoCard extends StatelessWidget {
                 'Controle de pedidos e consumo do barco-hotel',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: verdeEscuro,
+                  color: AppColors.verdeEscuro,
                 ),
               ),
             ),
@@ -311,22 +306,22 @@ class _QuickButton extends StatelessWidget {
     required this.onTap,
   });
 
-  static const Color verdeEscuro = Color(0xFF26522C);
-  static const Color verdeMedio = Color(0xFF628D38);
-
   @override
   Widget build(BuildContext context) {
     // Botao reutilizavel dos atalhos da Home.
     return OutlinedButton.icon(
       onPressed: onTap,
-      icon: Icon(icon, color: verdeMedio),
+      icon: Icon(icon, color: AppColors.verdeMedio),
       label: Text(
         label,
         textAlign: TextAlign.center,
-        style: const TextStyle(color: verdeEscuro, fontWeight: FontWeight.w600),
+        style: const TextStyle(
+          color: AppColors.verdeEscuro,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       style: OutlinedButton.styleFrom(
-        side: BorderSide(color: verdeMedio.withOpacity(0.6)),
+        side: BorderSide(color: AppColors.verdeMedio.withOpacity(0.6)),
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),

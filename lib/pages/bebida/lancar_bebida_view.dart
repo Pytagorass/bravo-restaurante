@@ -4,7 +4,14 @@ import 'package:bravo_restaurante/mvvm/lib/mvvm/bebida_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
+import 'package:bravo_restaurante/widgets/app_colors.dart';
+import 'package:bravo_restaurante/widgets/form_label.dart';
 import 'package:bravo_restaurante/widgets/info_alert.dart';
+import 'package:bravo_restaurante/widgets/primary_action_button.dart';
+import 'package:bravo_restaurante/widgets/quantity_selector.dart';
+import 'package:bravo_restaurante/widgets/reserva_dropdown.dart';
+import 'package:bravo_restaurante/widgets/secondary_action_button.dart';
+import 'package:bravo_restaurante/widgets/total_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,10 +23,6 @@ class LancarBebidaView extends StatefulWidget {
 }
 
 class _LancarBebidaViewState extends State<LancarBebidaView> {
-  static const Color verdeEscuro = Color(0xFF26522C);
-  static const Color verdeMedio = Color(0xFF628D38);
-  static const Color cinzaEscuro = Color(0xFF30332E);
-
   // Chave usada para validar todos os campos do formulario.
   final _formKey = GlobalKey<FormState>();
 
@@ -153,7 +156,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
               'Lançar Bebida na Conta',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: verdeEscuro,
+            backgroundColor: AppColors.verdeEscuro,
             foregroundColor: Colors.white,
           ),
 
@@ -173,31 +176,39 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
 
                         const SizedBox(height: 18),
 
-                        _label('Reserva / Quarto'),
+                        const FormLabel('Reserva / Quarto'),
                         const SizedBox(height: 6),
                         _buildDropdownReserva(reservaVM),
 
                         const SizedBox(height: 18),
 
-                        _label('Bebida'),
+                        const FormLabel('Bebida'),
                         const SizedBox(height: 6),
                         _buildDropdownBebida(bebidas),
 
                         const SizedBox(height: 18),
 
-                        _label('Quantidade'),
+                        const FormLabel('Quantidade'),
                         const SizedBox(height: 6),
-                        _buildQuantidadeSelector(),
+                        QuantitySelector(
+                          quantidade: quantidade,
+                          habilitado: bebidaSelecionada != null,
+                          aoAumentar: _aumentarQuantidade,
+                          aoDiminuir: _diminuirQuantidade,
+                        ),
 
                         const SizedBox(height: 18),
 
-                        _label('Valor Unitário'),
+                        const FormLabel('Valor Unitário'),
                         const SizedBox(height: 6),
                         _buildValorUnitario(),
 
                         const SizedBox(height: 18),
 
-                        _buildTotalCard(),
+                        TotalCard(
+                          titulo: 'Total a lançar na Conta do Cliente',
+                          valor: total,
+                        ),
 
                         const SizedBox(height: 14),
 
@@ -213,42 +224,11 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
     );
   }
 
-  Widget _label(String texto) {
-    return Text(
-      texto,
-      style: const TextStyle(fontWeight: FontWeight.w600, color: cinzaEscuro),
-    );
-  }
-
   Widget _buildDropdownReserva(ReservaViewModel reservaVM) {
     // Lista as reservas abertas para escolher em qual conta a bebida entrara.
-    if (reservaVM.mensagemErro != null) {
-      return Text(
-        reservaVM.mensagemErro!,
-        style: const TextStyle(color: Colors.red),
-      );
-    }
-
-    if (reservaVM.reservas.isEmpty) {
-      return const Text(
-        'Nenhuma reserva aberta encontrada.',
-        style: TextStyle(color: Colors.red),
-      );
-    }
-
-    return DropdownButtonFormField<Reserva>(
-      initialValue: reservaSelecionada,
-      decoration: const InputDecoration(
-        border: OutlineInputBorder(),
-        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      ),
-      hint: const Text('Selecione a reserva'),
-      items: reservaVM.reservas.map((reserva) {
-        return DropdownMenuItem<Reserva>(
-          value: reserva,
-          child: Text(reserva.descricaoDropdown),
-        );
-      }).toList(),
+    return ReservaDropdown(
+      reservaVM: reservaVM,
+      reservaSelecionada: reservaSelecionada,
       onChanged: (value) {
         setState(() {
           // Trocar de reserva reinicia a bebida e a quantidade escolhidas.
@@ -328,48 +308,6 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
     );
   }
 
-  Widget _buildQuantidadeSelector() {
-    // Controle visual para aumentar ou diminuir a quantidade da bebida.
-    final habilitado = bebidaSelecionada != null;
-
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: habilitado ? Colors.white : Colors.grey.shade100,
-        border: Border.all(color: Colors.grey.shade500),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: habilitado && quantidade > 1
-                ? _diminuirQuantidade
-                : null,
-            icon: const Icon(Icons.remove),
-            color: verdeEscuro,
-          ),
-          Expanded(
-            child: Center(
-              child: Text(
-                quantidade.toString(),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: habilitado ? cinzaEscuro : Colors.grey,
-                ),
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: habilitado ? _aumentarQuantidade : null,
-            icon: const Icon(Icons.add),
-            color: verdeEscuro,
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildValorUnitario() {
     // Campo somente leitura com o preco da bebida escolhida.
     final valor = bebidaSelecionada?.preco ?? 0.0;
@@ -385,55 +323,14 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
     );
   }
 
-  Widget _buildTotalCard() {
-    // Exibe o total calculado antes de confirmar o lancamento.
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: verdeMedio,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Total a lançar na Conta do Cliente',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-          ),
-          Text(
-            'R\$ ${total.toStringAsFixed(2)}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildBotaoLancar() {
     // Habilita o botao apenas quando reserva e bebida foram selecionadas.
     final habilitado = reservaSelecionada != null && bebidaSelecionada != null;
 
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton.icon(
-        onPressed: habilitado ? _lancarBebida : null,
-        icon: const Icon(Icons.check, color: Colors.white),
-        label: const Text(
-          'Lançar na Conta do Cliente',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: verdeEscuro,
-          disabledBackgroundColor: Colors.grey.shade400,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      ),
+    return PrimaryActionButton(
+      label: 'Lançar na Conta do Cliente',
+      icon: Icons.check,
+      onPressed: habilitado ? _lancarBebida : null,
     );
   }
 
@@ -442,19 +339,12 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
 
     // Habilita o botao apenas quando reserva e bebida foram selecionadas.
     final habilitado = reservaSelecionada != null && bebidaSelecionada != null;
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: OutlinedButton.icon(
-        onPressed: habilitado ? _cancelarLancamento : null,
-        icon: const Icon(Icons.close),
-        label: const Text('Cancelar Lançamento'),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.red.shade700,
-          side: BorderSide(color: Colors.red.shade300),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      ),
+    return SecondaryActionButton(
+      label: 'Cancelar Lançamento',
+      icon: Icons.close,
+      onPressed: habilitado ? _cancelarLancamento : null,
+      foregroundColor: Colors.red.shade700,
+      borderColor: Colors.red.shade300,
     );
   }
 }

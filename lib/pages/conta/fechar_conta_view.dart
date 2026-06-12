@@ -1,6 +1,13 @@
 import 'package:bravo_restaurante/models/reserva.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
+import 'package:bravo_restaurante/widgets/app_colors.dart';
+import 'package:bravo_restaurante/widgets/consumo_card.dart';
+import 'package:bravo_restaurante/widgets/form_label.dart';
 import 'package:bravo_restaurante/widgets/info_alert.dart';
+import 'package:bravo_restaurante/widgets/primary_action_button.dart';
+import 'package:bravo_restaurante/widgets/reserva_dropdown.dart';
+import 'package:bravo_restaurante/widgets/secondary_action_button.dart';
+import 'package:bravo_restaurante/widgets/total_card.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -15,10 +22,6 @@ class FecharContaView extends StatefulWidget {
 }
 
 class _FecharContaViewState extends State<FecharContaView> {
-  static const Color verdeEscuro = Color(0xFF26522C);
-  static const Color verdeMedio = Color(0xFF628D38);
-  static const Color cinzaEscuro = Color(0xFF30332E);
-
   // Cliente usado para buscar e atualizar dados diretamente no Supabase.
   final SupabaseClient _supabase = Supabase.instance.client;
 
@@ -139,7 +142,7 @@ class _FecharContaViewState extends State<FecharContaView> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: verdeEscuro,
+                backgroundColor: AppColors.verdeEscuro,
                 foregroundColor: Colors.white,
               ),
               onPressed: () => Navigator.pop(context, true),
@@ -281,10 +284,7 @@ class _FecharContaViewState extends State<FecharContaView> {
 
           pw.SizedBox(height: 16),
 
-          pw.Text(
-            'Bar',
-            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-          ),
+          pw.Text('Bar', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
 
           if (bebidas.isEmpty)
             pw.Text('Nenhuma bebida lançada.')
@@ -343,7 +343,7 @@ class _FecharContaViewState extends State<FecharContaView> {
               'Fechar Conta',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: verdeEscuro,
+            backgroundColor: AppColors.verdeEscuro,
             foregroundColor: Colors.white,
           ),
           body: SingleChildScrollView(
@@ -358,7 +358,7 @@ class _FecharContaViewState extends State<FecharContaView> {
 
                 const SizedBox(height: 18),
 
-                _label('Selecione a Reserva'),
+                const FormLabel('Selecione a Reserva'),
                 const SizedBox(height: 6),
                 _buildDropdownReserva(reservaVM),
 
@@ -400,46 +400,12 @@ class _FecharContaViewState extends State<FecharContaView> {
     );
   }
 
-  Widget _label(String texto) {
-    return Text(
-      texto,
-      style: const TextStyle(fontWeight: FontWeight.w600, color: cinzaEscuro),
-    );
-  }
-
   Widget _buildDropdownReserva(ReservaViewModel reservaVM) {
     // Monta o seletor de reservas abertas e carrega a conta ao selecionar.
-    if (reservaVM.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (reservaVM.mensagemErro != null) {
-      return Text(
-        reservaVM.mensagemErro!,
-        style: const TextStyle(color: Colors.red),
-      );
-    }
-
-    if (reservaVM.reservas.isEmpty) {
-      return const Text(
-        'Nenhuma reserva aberta encontrada.',
-        style: TextStyle(color: Colors.red),
-      );
-    }
-
-    return DropdownButtonFormField<Reserva>(
-      initialValue: reservaSelecionada,
-      decoration: const InputDecoration(
-        border: OutlineInputBorder(),
-        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      ),
-      hint: const Text('Selecione a reserva'),
-      items: reservaVM.reservas.map((reserva) {
-        return DropdownMenuItem<Reserva>(
-          value: reserva,
-          child: Text(reserva.descricaoDropdown),
-        );
-      }).toList(),
+    return ReservaDropdown(
+      reservaVM: reservaVM,
+      reservaSelecionada: reservaSelecionada,
+      mostrarLoading: true,
       onChanged: (value) {
         setState(() {
           // Guarda a reserva escolhida antes de buscar o resumo da conta.
@@ -475,7 +441,7 @@ class _FecharContaViewState extends State<FecharContaView> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
-              color: verdeEscuro,
+              color: AppColors.verdeEscuro,
             ),
           ),
           Text('Quarto ${reserva.numeroQuarto}'),
@@ -490,7 +456,7 @@ class _FecharContaViewState extends State<FecharContaView> {
               reserva.statusConta,
               style: const TextStyle(
                 fontSize: 12,
-                color: verdeEscuro,
+                color: AppColors.verdeEscuro,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -509,7 +475,7 @@ class _FecharContaViewState extends State<FecharContaView> {
           'Resumo da Conta do Cliente',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: cinzaEscuro,
+            color: AppColors.cinzaEscuro,
             fontSize: 16,
           ),
         ),
@@ -538,30 +504,11 @@ class _FecharContaViewState extends State<FecharContaView> {
 
         const SizedBox(height: 14),
 
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: verdeEscuro,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Total Acumulado na Conta do Cliente',
-                style: TextStyle(color: Colors.white),
-              ),
-              Text(
-                'R\$ ${totalConta.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
+        TotalCard(
+          titulo: 'Total Acumulado na Conta do Cliente',
+          valor: totalConta,
+          backgroundColor: AppColors.verdeEscuro,
+          valorFontSize: 26,
         ),
       ],
     );
@@ -573,32 +520,14 @@ class _FecharContaViewState extends State<FecharContaView> {
     final itens = pedido['item_pedido'] as List<dynamic>? ?? [];
     final dataPedido = _formatarDataPedido(pedido['created_at']);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Pedido', style: TextStyle(fontWeight: FontWeight.w600)),
-            Text('Data: $dataPedido'),
-            const SizedBox(height: 4),
-            ...itens.map((item) {
-              final produto = item['produto'] as Map<String, dynamic>? ?? {};
-              return Text(
-                '${item['quantidade']}x ${produto['nome_produto']} - R\$ ${(item['subtotal'] as num).toDouble().toStringAsFixed(2)}',
-              );
-            }),
-            const SizedBox(height: 6),
-            Text(
-              'Total: R\$ ${total.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: verdeEscuro,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return ConsumoCard(
+      data: dataPedido,
+      itens: itens.map((item) {
+        final produto = item['produto'] as Map<String, dynamic>? ?? {};
+        final subtotal = (item['subtotal'] as num?)?.toDouble() ?? 0.0;
+        return '${item['quantidade']}x ${produto['nome_produto']} - R\$ ${subtotal.toStringAsFixed(2)}';
+      }).toList(),
+      total: total,
     );
   }
 
@@ -608,66 +537,30 @@ class _FecharContaViewState extends State<FecharContaView> {
     final subtotal = (bebida['subtotal'] as num?)?.toDouble() ?? 0.0;
     final dataPedido = _formatarDataPedido(bebida['created_at']);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Pedido', style: TextStyle(fontWeight: FontWeight.w600)),
-            Text('Data: $dataPedido'),
-            const SizedBox(height: 4),
-            Text(
-              '${bebida['quantidade']}x ${produto['nome_produto']} - R\$ ${subtotal.toStringAsFixed(2)}',
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Total: R\$ ${subtotal.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: verdeEscuro,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return ConsumoCard(
+      data: dataPedido,
+      itens: [
+        '${bebida['quantidade']}x ${produto['nome_produto']} - R\$ ${subtotal.toStringAsFixed(2)}',
+      ],
+      total: subtotal,
     );
   }
 
   Widget _buildBotaoFecharConta() {
     // Botao principal que inicia o fluxo de confirmacao e fechamento da conta.
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton.icon(
-        onPressed: _fecharConta,
-        icon: const Icon(Icons.attach_money, color: Colors.white),
-        label: const Text(
-          'Fechar Conta',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: verdeEscuro,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      ),
+    return PrimaryActionButton(
+      label: 'Fechar Conta',
+      icon: Icons.attach_money,
+      onPressed: _fecharConta,
     );
   }
 
   Widget _buildBotaoComprovante() {
     // Botao secundario que gera o comprovante em PDF da conta.
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: OutlinedButton.icon(
-        onPressed: _gerarRelatorioConta,
-        icon: const Icon(Icons.description_outlined),
-        label: const Text('Gerar Comprovante'),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: verdeEscuro,
-          side: const BorderSide(color: verdeEscuro),
-        ),
-      ),
+    return SecondaryActionButton(
+      label: 'Gerar Comprovante',
+      icon: Icons.description_outlined,
+      onPressed: _gerarRelatorioConta,
     );
   }
 

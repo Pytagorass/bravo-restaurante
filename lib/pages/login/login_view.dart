@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
 import 'package:bravo_restaurante/pages/home/home_view.dart';
+import 'package:bravo_restaurante/widgets/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,10 +14,6 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  static const Color verdeEscuro = Color(0xFF26522C);
-  static const Color verdeMedio = Color(0xFF628D38);
-  static const Color cinzaEscuro = Color(0xFF30332E);
-
   // Chave do formulario usada para validar e-mail e senha juntos.
   final _formKey = GlobalKey<FormState>();
 
@@ -118,7 +115,7 @@ class _LoginViewState extends State<LoginView> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: verdeEscuro,
+                  color: AppColors.verdeEscuro,
                 ),
               ),
 
@@ -127,7 +124,7 @@ class _LoginViewState extends State<LoginView> {
               const Text(
                 'Controle do restaurante e bar do barco-hotel',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: cinzaEscuro),
+                style: TextStyle(color: AppColors.cinzaEscuro),
               ),
 
               const SizedBox(height: 32),
@@ -228,7 +225,7 @@ class _LoginViewState extends State<LoginView> {
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: verdeEscuro,
+                              backgroundColor: AppColors.verdeEscuro,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -247,7 +244,7 @@ class _LoginViewState extends State<LoginView> {
               Text(
                 'BRAVO • Barco-Hotel',
                 style: TextStyle(
-                  color: verdeMedio,
+                  color: AppColors.verdeMedio,
                   fontWeight: FontWeight.w600,
                 ),
               ),

@@ -5,7 +5,14 @@ import 'package:bravo_restaurante/mvvm/pedido_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
+import 'package:bravo_restaurante/widgets/app_colors.dart';
+import 'package:bravo_restaurante/widgets/form_label.dart';
 import 'package:bravo_restaurante/widgets/info_alert.dart';
+import 'package:bravo_restaurante/widgets/primary_action_button.dart';
+import 'package:bravo_restaurante/widgets/quantity_selector.dart';
+import 'package:bravo_restaurante/widgets/reserva_dropdown.dart';
+import 'package:bravo_restaurante/widgets/secondary_action_button.dart';
+import 'package:bravo_restaurante/widgets/total_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -31,10 +38,6 @@ class RegistrarPedidoView extends StatefulWidget {
 }
 
 class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
-  static const Color verdeEscuro = Color(0xFF26522C);
-  static const Color verdeMedio = Color(0xFF628D38);
-  static const Color cinzaEscuro = Color(0xFF30332E);
-
   // Formulario principal usado para validar reserva/produto antes de adicionar item.
   final _formKey = GlobalKey<FormState>();
 
@@ -195,7 +198,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: verdeEscuro,
+                    backgroundColor: AppColors.verdeEscuro,
                     foregroundColor: Colors.white,
                   ),
                   onPressed: () => Navigator.pop(context, novaQuantidade),
@@ -312,7 +315,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
               'Registrar Pedido',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: verdeEscuro,
+            backgroundColor: AppColors.verdeEscuro,
             foregroundColor: Colors.white,
           ),
           body: carregando
@@ -332,25 +335,30 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
 
                         const SizedBox(height: 18),
 
-                        _label('Reserva / Quarto'),
+                        const FormLabel('Reserva / Quarto'),
                         const SizedBox(height: 6),
                         _buildDropdownReserva(reservaVM),
 
                         const SizedBox(height: 18),
 
-                        _label('Produto'),
+                        const FormLabel('Produto'),
                         const SizedBox(height: 6),
                         _buildDropdownProduto(produtoVM),
 
                         const SizedBox(height: 18),
 
-                        _label('Quantidade'),
+                        const FormLabel('Quantidade'),
                         const SizedBox(height: 6),
-                        _buildQuantidadeSelector(),
+                        QuantitySelector(
+                          quantidade: quantidade,
+                          habilitado: produtoSelecionado != null,
+                          aoAumentar: _aumentarQuantidade,
+                          aoDiminuir: _diminuirQuantidade,
+                        ),
 
                         const SizedBox(height: 18),
 
-                        _label('Observação'),
+                        const FormLabel('Observação'),
                         const SizedBox(height: 6),
                         _buildObservacaoField(),
 
@@ -366,7 +374,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: cinzaEscuro,
+                              color: AppColors.cinzaEscuro,
                             ),
                           ),
 
@@ -404,7 +412,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                                         'R\$ ${item.subtotal.toStringAsFixed(2)}',
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: verdeEscuro,
+                                          color: AppColors.verdeEscuro,
                                         ),
                                       ),
                                       IconButton(
@@ -415,7 +423,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                                                 index,
                                               ),
                                         icon: const Icon(Icons.edit_outlined),
-                                        color: verdeEscuro,
+                                        color: AppColors.verdeEscuro,
                                       ),
                                       IconButton(
                                         tooltip: 'Cancelar item',
@@ -440,71 +448,26 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                             'Use editar para alterar a quantidade ou cancelar para remover um item antes de confirmar.',
                             style: TextStyle(
                               fontSize: 12,
-                              color: cinzaEscuro,
+                              color: AppColors.cinzaEscuro,
                             ),
                           ),
 
                           const SizedBox(height: 14),
 
-                          Container(
+                          TotalCard(
                             // Total calculado antes da confirmacao final do pedido.
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: verdeMedio,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Total do Pedido',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-
-                                Text(
-                                  'R\$ ${totalPedido.toStringAsFixed(2)}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            titulo: 'Total do Pedido',
+                            valor: totalPedido,
                           ),
 
                           const SizedBox(height: 14),
 
-                          SizedBox(
+                          PrimaryActionButton(
                             // Confirmacao final grava ContaConsumo, pedido e item_pedido.
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton.icon(
-                              onPressed: salvandoPedido
-                                  ? null
-                                  : _confirmarPedido,
-                              icon: const Icon(
-                                Icons.check,
-                                color: Colors.white,
-                              ),
-                              label: const Text(
-                                'Confirmar e Vincular à Conta do Cliente',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: verdeEscuro,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
+                            label: 'Confirmar e Vincular à Conta do Cliente',
+                            icon: Icons.check,
+                            onPressed: salvandoPedido ? null : _confirmarPedido,
+                            borderRadius: 10,
                           ),
 
                           const SizedBox(height: 10),
@@ -519,42 +482,11 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
     );
   }
 
-  Widget _label(String texto) {
-    return Text(
-      texto,
-      style: const TextStyle(fontWeight: FontWeight.w600, color: cinzaEscuro),
-    );
-  }
-
   Widget _buildDropdownReserva(ReservaViewModel reservaVM) {
     // Mostra erro/lista vazia antes de renderizar o dropdown.
-    if (reservaVM.mensagemErro != null) {
-      return Text(
-        reservaVM.mensagemErro!,
-        style: const TextStyle(color: Colors.red),
-      );
-    }
-
-    if (reservaVM.reservas.isEmpty) {
-      return const Text(
-        'Nenhuma reserva aberta encontrada.',
-        style: TextStyle(color: Colors.red),
-      );
-    }
-
-    return DropdownButtonFormField<Reserva>(
-      initialValue: reservaSelecionada,
-      decoration: const InputDecoration(
-        border: OutlineInputBorder(),
-        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      ),
-      hint: const Text('Selecione a reserva'),
-      items: reservaVM.reservas.map((reserva) {
-        return DropdownMenuItem<Reserva>(
-          value: reserva,
-          child: Text(reserva.descricaoDropdown),
-        );
-      }).toList(),
+    return ReservaDropdown(
+      reservaVM: reservaVM,
+      reservaSelecionada: reservaSelecionada,
       onChanged: (value) {
         setState(() {
           reservaSelecionada = value;
@@ -638,48 +570,6 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
     );
   }
 
-  Widget _buildQuantidadeSelector() {
-    // A quantidade só pode ser alterada após escolher um produto.
-    final habilitado = produtoSelecionado != null;
-
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: habilitado ? Colors.white : Colors.grey.shade100,
-        border: Border.all(color: Colors.grey.shade500),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: habilitado && quantidade > 1
-                ? _diminuirQuantidade
-                : null,
-            icon: const Icon(Icons.remove),
-            color: verdeEscuro,
-          ),
-          Expanded(
-            child: Center(
-              child: Text(
-                quantidade.toString(),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: habilitado ? cinzaEscuro : Colors.grey,
-                ),
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: habilitado ? _aumentarQuantidade : null,
-            icon: const Icon(Icons.add),
-            color: verdeEscuro,
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildObservacaoField() {
     // Campo opcional para observacoes que serao consolidadas no pedido.
     return TextFormField(
@@ -697,22 +587,11 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
     // O botao so habilita quando reserva e produto ja foram selecionados.
     final habilitado = reservaSelecionada != null && produtoSelecionado != null;
 
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton.icon(
-        onPressed: habilitado ? _adicionarItem : null,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          'Adicionar Item',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: verdeMedio,
-          disabledBackgroundColor: Colors.grey.shade400,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      ),
+    return PrimaryActionButton(
+      label: 'Adicionar Item',
+      icon: Icons.add,
+      onPressed: habilitado ? _adicionarItem : null,
+      backgroundColor: AppColors.verdeMedio,
     );
   }
 
@@ -720,19 +599,12 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
     // Cancela o pedido em montagem sem enviar nada para o banco.
     final habilitado = itensPedido.isNotEmpty && !salvandoPedido;
 
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: OutlinedButton.icon(
-        onPressed: habilitado ? _cancelarPedido : null,
-        icon: const Icon(Icons.close),
-        label: const Text('Cancelar Pedido'),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.red.shade700,
-          side: BorderSide(color: Colors.red.shade300),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      ),
+    return SecondaryActionButton(
+      label: 'Cancelar Pedido',
+      icon: Icons.close,
+      onPressed: habilitado ? _cancelarPedido : null,
+      foregroundColor: Colors.red.shade700,
+      borderColor: Colors.red.shade300,
     );
   }
 }

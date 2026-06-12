@@ -2,7 +2,11 @@ import 'package:bravo_restaurante/models/conta_consumo.dart';
 import 'package:bravo_restaurante/models/reserva.dart';
 import 'package:bravo_restaurante/mvvm/conta_consumo_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
+import 'package:bravo_restaurante/widgets/app_colors.dart';
+import 'package:bravo_restaurante/widgets/consumo_card.dart';
 import 'package:bravo_restaurante/widgets/info_alert.dart';
+import 'package:bravo_restaurante/widgets/reserva_dropdown.dart';
+import 'package:bravo_restaurante/widgets/total_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -28,9 +32,6 @@ class ContaHospedeView extends StatefulWidget {
 }
 
 class _ContaHospedeViewState extends State<ContaHospedeView> {
-  static const Color verdeEscuro = Color(0xFF26522C);
-  static const Color cinzaEscuro = Color(0xFF30332E);
-
   // Reserva usada para buscar e exibir a conta de consumo.
   Reserva? reservaSelecionada;
 
@@ -71,7 +72,7 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
               'Conta do Hospede',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: verdeEscuro,
+            backgroundColor: AppColors.verdeEscuro,
             foregroundColor: Colors.white,
           ),
           body: reservaVM.isLoading
@@ -120,43 +121,15 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
 
   Widget _buildReservaDropdown(ReservaViewModel reservaVM) {
     // Antes do dropdown, a tela trata erro ou ausência de reservas abertas.
-    if (reservaVM.mensagemErro != null) {
-      return _MensagemCard(mensagem: reservaVM.mensagemErro!);
-    }
-
-    if (reservaVM.reservas.isEmpty) {
-      return const _MensagemCard(
-        mensagem: 'Nenhuma reserva aberta encontrada.',
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Reserva / Quarto',
-          style: TextStyle(fontWeight: FontWeight.w600, color: cinzaEscuro),
-        ),
-        const SizedBox(height: 6),
-        DropdownButtonFormField<Reserva>(
-          initialValue: reservaSelecionada,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-          ),
-          hint: const Text('Selecione a reserva'),
-          items: reservaVM.reservas.map((reserva) {
-            return DropdownMenuItem<Reserva>(
-              value: reserva,
-              child: Text(reserva.descricaoDropdown),
-            );
-          }).toList(),
-          onChanged: (value) {
-            // Trocar a reserva dispara nova busca da ContaConsumo.
-            _selecionarReserva(value);
-          },
-        ),
-      ],
+    return ReservaDropdown(
+      reservaVM: reservaVM,
+      reservaSelecionada: reservaSelecionada,
+      label: 'Reserva / Quarto',
+      mensagemBuilder: (mensagem) => _MensagemCard(mensagem: mensagem),
+      onChanged: (value) {
+        // Trocar a reserva dispara nova busca da ContaConsumo.
+        _selecionarReserva(value);
+      },
     );
   }
 }
@@ -166,42 +139,16 @@ class _ContaDetalhes extends StatelessWidget {
 
   const _ContaDetalhes({required this.conta});
 
-  static const Color verdeMedio = Color(0xFF628D38);
-
   @override
   Widget build(BuildContext context) {
     // Mostra o resumo financeiro e as duas origens de consumo: pedidos e bebidas.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: verdeMedio,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Conta ${conta.statusConta}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'R\$ ${conta.totalAcumulado.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
+        TotalCard(
+          titulo: 'Conta ${conta.statusConta}',
+          valor: conta.totalAcumulado,
+          valorFontSize: 26,
         ),
         const SizedBox(height: 18),
         const Text(
@@ -233,42 +180,18 @@ class _PedidoCard extends StatelessWidget {
 
   const _PedidoCard({required this.pedido});
 
-  static const Color verdeEscuro = Color(0xFF26522C);
-
   @override
   Widget build(BuildContext context) {
     // Card no mesmo padrao visual da tela Fechar Conta.
     final dataPedido = _formatarDataConta(pedido.createdAt);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Pedido', style: TextStyle(fontWeight: FontWeight.w600)),
-            Text('Data: $dataPedido'),
-            if (pedido.observacao.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text('Observacao: ${pedido.observacao}'),
-            ],
-            const SizedBox(height: 4),
-            ...pedido.itens.map((item) {
-              return Text(
-                '${item.quantidade}x ${item.nomeProduto} - R\$ ${item.subtotal.toStringAsFixed(2)}',
-              );
-            }),
-            const SizedBox(height: 6),
-            Text(
-              'Total: R\$ ${pedido.totalPedido.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: verdeEscuro,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return ConsumoCard(
+      data: dataPedido,
+      observacao: pedido.observacao,
+      itens: pedido.itens.map((item) {
+        return '${item.quantidade}x ${item.nomeProduto} - R\$ ${item.subtotal.toStringAsFixed(2)}';
+      }).toList(),
+      total: pedido.totalPedido,
     );
   }
 }
@@ -278,40 +201,18 @@ class _BebidaCard extends StatelessWidget {
 
   const _BebidaCard({required this.bebida});
 
-  static const Color verdeEscuro = Color(0xFF26522C);
-
   @override
   Widget build(BuildContext context) {
     // Card do bar no mesmo padrao visual dos pedidos do restaurante.
     final dataPedido = _formatarDataConta(bebida.createdAt);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Pedido', style: TextStyle(fontWeight: FontWeight.w600)),
-            Text('Data: $dataPedido'),
-            const SizedBox(height: 4),
-            Text(
-              '${bebida.quantidade}x ${bebida.nomeProduto} - R\$ ${bebida.subtotal.toStringAsFixed(2)}',
-            ),
-            if (bebida.observacao.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text('Observacao: ${bebida.observacao}'),
-            ],
-            const SizedBox(height: 6),
-            Text(
-              'Total: R\$ ${bebida.subtotal.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: verdeEscuro,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return ConsumoCard(
+      data: dataPedido,
+      observacao: bebida.observacao,
+      itens: [
+        '${bebida.quantidade}x ${bebida.nomeProduto} - R\$ ${bebida.subtotal.toStringAsFixed(2)}',
+      ],
+      total: bebida.subtotal,
     );
   }
 }
