@@ -44,6 +44,7 @@ class ContaConsumoViewModel extends ChangeNotifier {
             status_pedido,
             observacao,
             total_pedido,
+            created_at,
             item_pedido (
               quantidade,
               valor_unitario,
@@ -64,6 +65,7 @@ class ContaConsumoViewModel extends ChangeNotifier {
             valor_unitario,
             subtotal,
             observacao,
+            created_at,
             produto:id_produto (
               nome_produto
             )

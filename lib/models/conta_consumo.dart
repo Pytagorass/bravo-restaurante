@@ -48,6 +48,7 @@ class PedidoConta {
   final String statusPedido;
   final String observacao;
   final double totalPedido;
+  final DateTime? createdAt;
 
   // Itens ligados ao pedido pelo relacionamento item_pedido.
   final List<ItemPedidoConta> itens;
@@ -57,6 +58,7 @@ class PedidoConta {
     required this.statusPedido,
     required this.observacao,
     required this.totalPedido,
+    this.createdAt,
     required this.itens,
   });
 
@@ -70,6 +72,7 @@ class PedidoConta {
       statusPedido: map['status_pedido'] ?? '',
       observacao: map['observacao'] ?? '',
       totalPedido: (map['total_pedido'] as num?)?.toDouble() ?? 0.0,
+      createdAt: DateTime.tryParse(map['created_at']?.toString() ?? ''),
       itens: itensMap
           .map((item) => ItemPedidoConta.fromMap(item as Map<String, dynamic>))
           .toList(),
@@ -114,6 +117,7 @@ class BebidaConta {
   final double valorUnitario;
   final double subtotal;
   final String observacao;
+  final DateTime? createdAt;
 
   BebidaConta({
     required this.nomeProduto,
@@ -121,6 +125,7 @@ class BebidaConta {
     required this.valorUnitario,
     required this.subtotal,
     required this.observacao,
+    this.createdAt,
   });
 
   // Le a bebida e o produto relacionado retornados pela consulta do Supabase.
@@ -134,6 +139,7 @@ class BebidaConta {
       valorUnitario: (map['valor_unitario'] as num?)?.toDouble() ?? 0.0,
       subtotal: (map['subtotal'] as num?)?.toDouble() ?? 0.0,
       observacao: map['observacao'] ?? '',
+      createdAt: DateTime.tryParse(map['created_at']?.toString() ?? ''),
     );
   }
 }

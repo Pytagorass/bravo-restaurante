@@ -6,6 +6,20 @@ import 'package:bravo_restaurante/widgets/info_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+String _formatarDataConta(DateTime? data) {
+  if (data == null) return 'Data nao informada';
+
+  final dataLocal = data.toLocal();
+  String doisDigitos(int numero) => numero.toString().padLeft(2, '0');
+
+  final dia = doisDigitos(dataLocal.day);
+  final mes = doisDigitos(dataLocal.month);
+  final hora = doisDigitos(dataLocal.hour);
+  final minuto = doisDigitos(dataLocal.minute);
+
+  return '$dia/$mes/${dataLocal.year} $hora:$minuto';
+}
+
 class ContaHospedeView extends StatefulWidget {
   const ContaHospedeView({super.key});
 
@@ -191,7 +205,7 @@ class _ContaDetalhes extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         const Text(
-          'Pedidos',
+          'Restaurante',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         const SizedBox(height: 8),
@@ -201,12 +215,12 @@ class _ContaDetalhes extends StatelessWidget {
           ...conta.pedidos.map((pedido) => _PedidoCard(pedido: pedido)),
         const SizedBox(height: 18),
         const Text(
-          'Bebidas Lancadas',
+          'Bar',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         const SizedBox(height: 8),
         if (conta.bebidas.isEmpty)
-          const _MensagemCard(mensagem: 'Nenhuma bebida lancada.')
+          const _MensagemCard(mensagem: 'Nenhum pedido ao bar realizado.')
         else
           ...conta.bebidas.map((bebida) => _BebidaCard(bebida: bebida)),
       ],
@@ -223,37 +237,37 @@ class _PedidoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ExpansionTile mantém a lista compacta e abre os itens sob demanda.
+    // Card no mesmo padrao visual da tela Fechar Conta.
+    final dataPedido = _formatarDataConta(pedido.createdAt);
+
     return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: ExpansionTile(
-        title: Text(
-          'Pedido ${pedido.statusPedido}',
-          style: const TextStyle(fontWeight: FontWeight.w600),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Pedido', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text('Data: $dataPedido'),
+            if (pedido.observacao.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text('Observacao: ${pedido.observacao}'),
+            ],
+            const SizedBox(height: 4),
+            ...pedido.itens.map((item) {
+              return Text(
+                '${item.quantidade}x ${item.nomeProduto} - R\$ ${item.subtotal.toStringAsFixed(2)}',
+              );
+            }),
+            const SizedBox(height: 6),
+            Text(
+              'Total: R\$ ${pedido.totalPedido.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: verdeEscuro,
+              ),
+            ),
+          ],
         ),
-        subtitle: Text('R\$ ${pedido.totalPedido.toStringAsFixed(2)}'),
-        children: [
-          if (pedido.observacao.isNotEmpty)
-            ListTile(dense: true, title: Text(pedido.observacao)),
-          ...pedido.itens.map((item) {
-            return ListTile(
-              dense: true,
-              title: Text('${item.quantidade}x ${item.nomeProduto}'),
-              subtitle: Text(
-                'R\$ ${item.valorUnitario.toStringAsFixed(2)} cada',
-              ),
-              trailing: Text(
-                'R\$ ${item.subtotal.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  color: verdeEscuro,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            );
-          }),
-        ],
       ),
     );
   }
@@ -268,25 +282,34 @@ class _BebidaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Bebidas lançadas direto na conta não têm itens filhos, então usam ListTile.
+    // Card do bar no mesmo padrao visual dos pedidos do restaurante.
+    final dataPedido = _formatarDataConta(bebida.createdAt);
+
     return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: ListTile(
-        leading: const Icon(Icons.local_bar, color: verdeEscuro),
-        title: Text('${bebida.quantidade}x ${bebida.nomeProduto}'),
-        subtitle: Text(
-          bebida.observacao.isEmpty
-              ? 'R\$ ${bebida.valorUnitario.toStringAsFixed(2)} cada'
-              : bebida.observacao,
-        ),
-        trailing: Text(
-          'R\$ ${bebida.subtotal.toStringAsFixed(2)}',
-          style: const TextStyle(
-            color: verdeEscuro,
-            fontWeight: FontWeight.bold,
-          ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Pedido', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text('Data: $dataPedido'),
+            const SizedBox(height: 4),
+            Text(
+              '${bebida.quantidade}x ${bebida.nomeProduto} - R\$ ${bebida.subtotal.toStringAsFixed(2)}',
+            ),
+            if (bebida.observacao.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text('Observacao: ${bebida.observacao}'),
+            ],
+            const SizedBox(height: 6),
+            Text(
+              'Total: R\$ ${bebida.subtotal.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: verdeEscuro,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -42,6 +42,7 @@ class _FecharContaViewState extends State<FecharContaView> {
 
     // Carrega as reservas abertas depois que a tela foi criada.
     Future.microtask(() {
+      // ignore: use_build_context_synchronously
       context.read<ReservaViewModel>().carregarReservasAbertas();
     });
   }
@@ -61,9 +62,9 @@ class _FecharContaViewState extends State<FecharContaView> {
       final pedidosResponse = await _supabase
           .from('pedido')
           .select('''
-            id_pedido,
             total_pedido,
             status_pedido,
+            created_at,
             item_pedido (
               quantidade,
               subtotal,
@@ -83,6 +84,7 @@ class _FecharContaViewState extends State<FecharContaView> {
             id_bebida_lancada,
             quantidade,
             subtotal,
+            created_at,
             produto:id_produto (
               nome_produto,
               preco
@@ -191,6 +193,23 @@ class _FecharContaViewState extends State<FecharContaView> {
     );
   }
 
+  String _formatarDataPedido(dynamic valor) {
+    final data = valor is DateTime
+        ? valor.toLocal()
+        : DateTime.tryParse(valor?.toString() ?? '')?.toLocal();
+
+    if (data == null) return 'Data nao informada';
+
+    String doisDigitos(int numero) => numero.toString().padLeft(2, '0');
+
+    final dia = doisDigitos(data.day);
+    final mes = doisDigitos(data.month);
+    final hora = doisDigitos(data.hour);
+    final minuto = doisDigitos(data.minute);
+
+    return '$dia/$mes/${data.year} $hora:$minuto';
+  }
+
   Future<void> _gerarRelatorioConta() async {
     // Gera um PDF com o resumo da conta selecionada.
     if (reservaSelecionada == null) {
@@ -220,7 +239,7 @@ class _FecharContaViewState extends State<FecharContaView> {
           pw.SizedBox(height: 16),
 
           pw.Text(
-            'Pedidos',
+            'Restaurante',
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
           ),
 
@@ -232,15 +251,17 @@ class _FecharContaViewState extends State<FecharContaView> {
               final itens = pedido['item_pedido'] as List<dynamic>? ?? [];
               final totalPedido =
                   (pedido['total_pedido'] as num?)?.toDouble() ?? 0.0;
+              final dataPedido = _formatarDataPedido(pedido['created_at']);
 
               return pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.SizedBox(height: 8),
                   pw.Text(
-                    'Pedido ${pedido['id_pedido'].toString().substring(0, 8)}',
+                    'Pedido',
                     style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                   ),
+                  pw.Text('Data: $dataPedido'),
                   ...itens.map((item) {
                     final produto =
                         item['produto'] as Map<String, dynamic>? ?? {};
@@ -261,20 +282,35 @@ class _FecharContaViewState extends State<FecharContaView> {
           pw.SizedBox(height: 16),
 
           pw.Text(
-            'Bebidas Lançadas',
+            'Bar',
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
           ),
 
           if (bebidas.isEmpty)
             pw.Text('Nenhuma bebida lançada.')
           else
-            // Para cada bebida, adiciona quantidade, produto e subtotal.
+            // Para cada bebida, cria um bloco no mesmo visual dos pedidos.
             ...bebidas.map((bebida) {
               final produto = bebida['produto'] as Map<String, dynamic>? ?? {};
               final subtotal = (bebida['subtotal'] as num?)?.toDouble() ?? 0.0;
+              final dataPedido = _formatarDataPedido(bebida['created_at']);
 
-              return pw.Text(
-                '${bebida['quantidade']}x ${produto['nome_produto']} - R\$ ${subtotal.toStringAsFixed(2)}',
+              return pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.SizedBox(height: 8),
+                  pw.Text(
+                    'Pedido',
+                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                  ),
+                  pw.Text('Data: $dataPedido'),
+                  pw.Text(
+                    '${bebida['quantidade']}x ${produto['nome_produto']} - R\$ ${subtotal.toStringAsFixed(2)}',
+                  ),
+                  pw.Text(
+                    'Total do pedido: R\$ ${subtotal.toStringAsFixed(2)}',
+                  ),
+                ],
               );
             }),
 
@@ -392,7 +428,7 @@ class _FecharContaViewState extends State<FecharContaView> {
     }
 
     return DropdownButtonFormField<Reserva>(
-      value: reservaSelecionada,
+      initialValue: reservaSelecionada,
       decoration: const InputDecoration(
         border: OutlineInputBorder(),
         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -465,12 +501,12 @@ class _FecharContaViewState extends State<FecharContaView> {
   }
 
   Widget _buildResumoConta() {
-    // Agrupa pedidos, bebidas e total acumulado em um resumo visual.
+    // Agrupa pedidos ao restaurante e bar, e total acumulado em um resumo visual.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Resumo da ContaConsumo',
+          'Resumo da Conta do Cliente',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: cinzaEscuro,
@@ -479,7 +515,10 @@ class _FecharContaViewState extends State<FecharContaView> {
         ),
         const SizedBox(height: 10),
 
-        const Text('Pedidos', style: TextStyle(fontWeight: FontWeight.w600)),
+        const Text(
+          'Restaurante',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 6),
 
         if (pedidos.isEmpty)
@@ -489,11 +528,11 @@ class _FecharContaViewState extends State<FecharContaView> {
 
         const SizedBox(height: 14),
 
-        const Text('Bebidas', style: TextStyle(fontWeight: FontWeight.w600)),
+        const Text('Bar', style: TextStyle(fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
 
         if (bebidas.isEmpty)
-          const Text('Nenhuma bebida lançada.')
+          const Text('Nenhuma pedido ao bar realizado.')
         else
           ...bebidas.map((bebida) => _buildBebidaCard(bebida)),
 
@@ -510,7 +549,7 @@ class _FecharContaViewState extends State<FecharContaView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Total Acumulado na ContaConsumo',
+                'Total Acumulado na Conta do Cliente',
                 style: TextStyle(color: Colors.white),
               ),
               Text(
@@ -532,6 +571,7 @@ class _FecharContaViewState extends State<FecharContaView> {
     // Card individual com itens e total de um pedido da conta.
     final total = (pedido['total_pedido'] as num?)?.toDouble() ?? 0.0;
     final itens = pedido['item_pedido'] as List<dynamic>? ?? [];
+    final dataPedido = _formatarDataPedido(pedido['created_at']);
 
     return Card(
       child: Padding(
@@ -539,7 +579,8 @@ class _FecharContaViewState extends State<FecharContaView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Pedido: ${pedido['id_pedido'].toString().substring(0, 8)}'),
+            const Text('Pedido', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text('Data: $dataPedido'),
             const SizedBox(height: 4),
             ...itens.map((item) {
               final produto = item['produto'] as Map<String, dynamic>? ?? {};
@@ -562,19 +603,32 @@ class _FecharContaViewState extends State<FecharContaView> {
   }
 
   Widget _buildBebidaCard(Map<String, dynamic> bebida) {
-    // Card individual com quantidade, nome e subtotal da bebida lancada.
+    // Card individual do bar no mesmo visual usado pelos pedidos do restaurante.
     final produto = bebida['produto'] as Map<String, dynamic>? ?? {};
     final subtotal = (bebida['subtotal'] as num?)?.toDouble() ?? 0.0;
+    final dataPedido = _formatarDataPedido(bebida['created_at']);
 
     return Card(
-      child: ListTile(
-        title: Text('${bebida['quantidade']}x ${produto['nome_produto']}'),
-        trailing: Text(
-          'R\$ ${subtotal.toStringAsFixed(2)}',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: verdeEscuro,
-          ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Pedido', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text('Data: $dataPedido'),
+            const SizedBox(height: 4),
+            Text(
+              '${bebida['quantidade']}x ${produto['nome_produto']} - R\$ ${subtotal.toStringAsFixed(2)}',
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Total: R\$ ${subtotal.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: verdeEscuro,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -628,7 +682,7 @@ class _FecharContaViewState extends State<FecharContaView> {
         border: Border.all(color: Colors.blue.shade100),
       ),
       child: const Text(
-        'Ao fechar a conta, nenhum novo pedido ou bebida poderá ser adicionado à ContaConsumo.',
+        'Ao fechar a conta, nenhum novo pedido ou bebida poderá ser adicionado à Conta do Cliente.',
         style: TextStyle(fontSize: 13),
       ),
     );

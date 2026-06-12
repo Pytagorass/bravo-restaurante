@@ -114,6 +114,20 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
     }
   }
 
+  void _cancelarLancamento() {
+    setState(() {
+      // Cancela o lancamento em montagem antes de gravar no banco.
+      reservaSelecionada = null;
+      bebidaSelecionada = null;
+      quantidade = 1;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _formKey.currentState?.reset();
+    });
+    _mostrarMensagem('Lançamento de bebida cancelado.');
+  }
+
   void _mostrarMensagem(String mensagem) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(mensagem), behavior: SnackBarBehavior.floating),
@@ -154,7 +168,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
                       children: [
                         const InfoAlert(
                           message:
-                              'Lancamento rapido de bebida direto na ContaConsumo.',
+                              'Lançamento rápido de bebida direto na Conta do Cliente.',
                         ),
 
                         const SizedBox(height: 18),
@@ -188,6 +202,8 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
                         const SizedBox(height: 14),
 
                         _buildBotaoLancar(),
+                        const SizedBox(height: 10),
+                        _buildBotaoCancelar(),
                       ],
                     ),
                   ),
@@ -221,7 +237,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
     }
 
     return DropdownButtonFormField<Reserva>(
-      value: reservaSelecionada,
+      initialValue: reservaSelecionada,
       decoration: const InputDecoration(
         border: OutlineInputBorder(),
         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -263,7 +279,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
     }
 
     return DropdownButtonFormField<Produto>(
-      value: bebidaSelecionada,
+      initialValue: bebidaSelecionada,
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
         contentPadding: const EdgeInsets.symmetric(
@@ -382,7 +398,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Total a lançar na ContaConsumo',
+            'Total a lançar na Conta do Cliente',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
           ),
           Text(
@@ -409,12 +425,33 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
         onPressed: habilitado ? _lancarBebida : null,
         icon: const Icon(Icons.check, color: Colors.white),
         label: const Text(
-          'Lançar na ContaConsumo',
+          'Lançar na Conta do Cliente',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: verdeEscuro,
           disabledBackgroundColor: Colors.grey.shade400,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBotaoCancelar() {
+    // Cancela o lancamento do bar sem enviar nada para o banco.
+
+    // Habilita o botao apenas quando reserva e bebida foram selecionadas.
+    final habilitado = reservaSelecionada != null && bebidaSelecionada != null;
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: OutlinedButton.icon(
+        onPressed: habilitado ? _cancelarLancamento : null,
+        icon: const Icon(Icons.close),
+        label: const Text('Cancelar Lançamento'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.red.shade700,
+          side: BorderSide(color: Colors.red.shade300),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),

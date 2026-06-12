@@ -114,6 +114,113 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
     _mostrarMensagem('Item adicionado ao pedido.');
   }
 
+  void _cancelarPedido() {
+    if (salvandoPedido) return;
+
+    setState(() {
+      // Cancela a montagem local do pedido antes de gravar no banco.
+      itensPedido.clear();
+      reservaSelecionada = null;
+      produtoSelecionado = null;
+      quantidade = 1;
+      _observacaoController.clear();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _formKey.currentState?.reset();
+    });
+    _mostrarMensagem('Inserção de pedido cancelada.');
+  }
+
+  void _removerItemPedido(int index) {
+    if (salvandoPedido) return;
+
+    setState(() {
+      itensPedido.removeAt(index);
+    });
+
+    _mostrarMensagem('Item removido do pedido.');
+  }
+
+  Future<void> _editarQuantidadeItem(int index) async {
+    if (salvandoPedido) return;
+
+    final item = itensPedido[index];
+    var novaQuantidade = item.quantidade;
+
+    final quantidadeEditada = await showDialog<int>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Editar quantidade'),
+              content: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: novaQuantidade > 1
+                        ? () {
+                            setDialogState(() {
+                              novaQuantidade--;
+                            });
+                          }
+                        : null,
+                    icon: const Icon(Icons.remove),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    child: Text(
+                      novaQuantidade.toString(),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      setDialogState(() {
+                        novaQuantidade++;
+                      });
+                    },
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: verdeEscuro,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () => Navigator.pop(context, novaQuantidade),
+                  child: const Text('Salvar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (quantidadeEditada == null || !mounted) return;
+
+    setState(() {
+      itensPedido[index] = ItemPedidoTemporario(
+        produto: item.produto,
+        quantidade: quantidadeEditada,
+        observacao: item.observacao,
+      );
+    });
+
+    _mostrarMensagem('Quantidade do item atualizada.');
+  }
+
   Future<void> _confirmarPedido() async {
     // A confirmação grava a conta/pedido/itens no Supabase.
     if (reservaSelecionada == null) {
@@ -171,7 +278,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
       _observacaoController.clear();
     });
 
-    _mostrarMensagem('Pedido confirmado e vinculado a ContaConsumo.');
+    _mostrarMensagem('Pedido confirmado e vinculado a Conta do cliente.');
   }
 
   String? _observacaoPedido() {
@@ -220,7 +327,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                         // Alerta de contexto no inicio do formulario.
                         const InfoAlert(
                           message:
-                              'Registre produtos consumidos e vincule o pedido a uma reserva aberta.',
+                              'Registre o pedido e vincule a uma reserva aberta.',
                         ),
 
                         const SizedBox(height: 18),
@@ -290,15 +397,50 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                                     'R\$ ${item.produto.preco.toStringAsFixed(2)} cada',
                                   ),
 
-                                  trailing: Text(
-                                    'R\$ ${item.subtotal.toStringAsFixed(2)}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: verdeEscuro,
-                                    ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'R\$ ${item.subtotal.toStringAsFixed(2)}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: verdeEscuro,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        tooltip: 'Editar quantidade',
+                                        onPressed: salvandoPedido
+                                            ? null
+                                            : () => _editarQuantidadeItem(
+                                                index,
+                                              ),
+                                        icon: const Icon(Icons.edit_outlined),
+                                        color: verdeEscuro,
+                                      ),
+                                      IconButton(
+                                        tooltip: 'Cancelar item',
+                                        onPressed: salvandoPedido
+                                            ? null
+                                            : () => _removerItemPedido(index),
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                        ),
+                                        color: Colors.red,
+                                      ),
+                                    ],
                                   ),
                                 );
                               },
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          const Text(
+                            'Use editar para alterar a quantidade ou cancelar para remover um item antes de confirmar.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: cinzaEscuro,
                             ),
                           ),
 
@@ -350,7 +492,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                                 color: Colors.white,
                               ),
                               label: const Text(
-                                'Confirmar e Vincular à ContaConsumo',
+                                'Confirmar e Vincular à Conta do Cliente',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -364,6 +506,9 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                               ),
                             ),
                           ),
+
+                          const SizedBox(height: 10),
+                          _buildBotaoCancelar(),
                         ],
                       ],
                     ),
@@ -549,7 +694,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
   }
 
   Widget _buildBotaoAdicionar() {
-    // O botão só habilita quando reserva e produto já foram selecionados.
+    // O botao so habilita quando reserva e produto ja foram selecionados.
     final habilitado = reservaSelecionada != null && produtoSelecionado != null;
 
     return SizedBox(
@@ -565,6 +710,26 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
         style: ElevatedButton.styleFrom(
           backgroundColor: verdeMedio,
           disabledBackgroundColor: Colors.grey.shade400,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBotaoCancelar() {
+    // Cancela o pedido em montagem sem enviar nada para o banco.
+    final habilitado = itensPedido.isNotEmpty && !salvandoPedido;
+
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: OutlinedButton.icon(
+        onPressed: habilitado ? _cancelarPedido : null,
+        icon: const Icon(Icons.close),
+        label: const Text('Cancelar Pedido'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.red.shade700,
+          side: BorderSide(color: Colors.red.shade300),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
