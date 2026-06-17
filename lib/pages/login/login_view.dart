@@ -115,7 +115,7 @@ class _LoginViewState extends State<LoginView> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: CoresAPP.verdeEscuro,
+                  color: CoresApp.verdeEscuro,
                 ),
               ),
 
@@ -124,7 +124,7 @@ class _LoginViewState extends State<LoginView> {
               const Text(
                 'Controle do restaurante e bar do barco-hotel',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: CoresAPP.cinzaEscuro),
+                style: TextStyle(color: CoresApp.cinzaEscuro),
               ),
 
               const SizedBox(height: 32),
@@ -225,7 +225,7 @@ class _LoginViewState extends State<LoginView> {
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: CoresAPP.verdeEscuro,
+                              backgroundColor: CoresApp.verdeEscuro,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -244,7 +244,7 @@ class _LoginViewState extends State<LoginView> {
               Text(
                 'BRAVO • Barco-Hotel',
                 style: TextStyle(
-                  color: CoresAPP.verdeMedio,
+                  color: CoresApp.verdeMedio,
                   fontWeight: FontWeight.w600,
                 ),
               ),

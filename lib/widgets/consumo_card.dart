@@ -43,7 +43,7 @@ class ConsumoCard extends StatelessWidget {
               '$totalLabel R\$ ${total.toStringAsFixed(2)}',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                color: CoresAPP.verdeEscuro,
+                color: CoresApp.verdeEscuro,
               ),
             ),
           ],

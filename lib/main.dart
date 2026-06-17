@@ -61,11 +61,11 @@ class BravoApp extends StatelessWidget {
 
       theme: ThemeData(
         // Cor principal usada nas barras, botoes e componentes do app.
-        primaryColor: CoresAPP.verdeEscuro,
+        primaryColor: CoresApp.verdeEscuro,
 
         scaffoldBackgroundColor: Colors.white,
 
-        colorScheme: ColorScheme.fromSeed(seedColor: CoresAPP.verdeEscuro),
+        colorScheme: ColorScheme.fromSeed(seedColor: CoresApp.verdeEscuro),
       ),
 
       // A primeira tela exibida quando o aplicativo abre.

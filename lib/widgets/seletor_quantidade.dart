@@ -2,14 +2,14 @@ import 'package:bravo_restaurante/widgets/cores_app.dart';
 import 'package:flutter/material.dart';
 
 // Controle reutilizavel para aumentar ou diminuir quantidades em formularios.
-class SeletorQuantide extends StatelessWidget {
+class SeletorQuantidade extends StatelessWidget {
   final int quantidade;
   final bool habilitado;
   final VoidCallback aoAumentar;
   final VoidCallback aoDiminuir;
   final int quantidadeMinima;
 
-  const SeletorQuantide({
+  const SeletorQuantidade({
     super.key,
     required this.quantidade,
     required this.habilitado,
@@ -34,7 +34,7 @@ class SeletorQuantide extends StatelessWidget {
           IconButton(
             onPressed: podeDiminuir ? aoDiminuir : null,
             icon: const Icon(Icons.remove),
-            color: CoresAPP.verdeEscuro,
+            color: CoresApp.verdeEscuro,
           ),
           Expanded(
             child: Center(
@@ -43,7 +43,7 @@ class SeletorQuantide extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: habilitado ? CoresAPP.cinzaEscuro : Colors.grey,
+                  color: habilitado ? CoresApp.cinzaEscuro : Colors.grey,
                 ),
               ),
             ),
@@ -51,7 +51,7 @@ class SeletorQuantide extends StatelessWidget {
           IconButton(
             onPressed: habilitado ? aoAumentar : null,
             icon: const Icon(Icons.add),
-            color: CoresAPP.verdeEscuro,
+            color: CoresApp.verdeEscuro,
           ),
         ],
       ),

@@ -1,6 +1,6 @@
 import 'package:bravo_restaurante/models/reserva.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
-import 'package:bravo_restaurante/widgets/formulario.dart';
+import 'package:bravo_restaurante/widgets/rotulo_formulario.dart';
 import 'package:flutter/material.dart';
 
 // Dropdown padrao para selecionar reservas abertas em formularios e consultas.
@@ -63,7 +63,7 @@ class ReservaDropdown extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [Formulario(label!), const SizedBox(height: 6), dropdown],
+      children: [RotuloFormulario(label!), const SizedBox(height: 6), dropdown],
     );
   }
 

@@ -64,7 +64,7 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('BRAVO Restaurante'),
-        backgroundColor: CoresAPP.verdeEscuro,
+        backgroundColor: CoresApp.verdeEscuro,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -96,8 +96,8 @@ class _HomeViewState extends State<HomeView> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        selectedItemColor: CoresAPP.verdeEscuro,
-        unselectedItemColor: CoresAPP.cinzaEscuro.withOpacity(0.6),
+        selectedItemColor: CoresApp.verdeEscuro,
+        unselectedItemColor: CoresApp.cinzaEscuro.withValues(alpha: 0.6),
         showUnselectedLabels: true,
         onTap: (index) {
           // Atualiza o item selecionado e abre a tela ligada ao indice tocado.
@@ -139,12 +139,12 @@ class _HomeViewState extends State<HomeView> {
       child: Column(
         children: [
           const UserAccountsDrawerHeader(
-            decoration: BoxDecoration(color: CoresAPP.verdeEscuro),
+            decoration: BoxDecoration(color: CoresApp.verdeEscuro),
             accountName: Text('Usuário Teste'),
             accountEmail: Text('teste@bravo.com'),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Colors.white,
-              child: Icon(Icons.person, color: CoresAPP.verdeEscuro),
+              child: Icon(Icons.person, color: CoresApp.verdeEscuro),
             ),
           ),
           ListTile(
@@ -200,7 +200,7 @@ class _ResumoCard extends StatelessWidget {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: CoresAPP.verdeMedio,
+              backgroundColor: CoresApp.verdeMedio,
               child: Icon(Icons.restaurant, color: Colors.white),
             ),
             SizedBox(width: 12),
@@ -209,7 +209,7 @@ class _ResumoCard extends StatelessWidget {
                 'Controle de pedidos e consumo do barco-hotel',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: CoresAPP.verdeEscuro,
+                  color: CoresApp.verdeEscuro,
                 ),
               ),
             ),
@@ -311,17 +311,17 @@ class _QuickButton extends StatelessWidget {
     // Botao reutilizavel dos atalhos da Home.
     return OutlinedButton.icon(
       onPressed: onTap,
-      icon: Icon(icon, color: CoresAPP.verdeMedio),
+      icon: Icon(icon, color: CoresApp.verdeMedio),
       label: Text(
         label,
         textAlign: TextAlign.center,
         style: const TextStyle(
-          color: CoresAPP.verdeEscuro,
+          color: CoresApp.verdeEscuro,
           fontWeight: FontWeight.w600,
         ),
       ),
       style: OutlinedButton.styleFrom(
-        side: BorderSide(color: CoresAPP.verdeMedio.withOpacity(0.6)),
+        side: BorderSide(color: CoresApp.verdeMedio.withValues(alpha: 0.6)),
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),

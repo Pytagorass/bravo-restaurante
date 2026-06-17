@@ -72,7 +72,7 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
               'Conta do Hospede',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: CoresAPP.verdeEscuro,
+            backgroundColor: CoresApp.verdeEscuro,
             foregroundColor: Colors.white,
           ),
           body: reservaVM.isLoading

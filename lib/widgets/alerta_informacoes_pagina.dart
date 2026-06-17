@@ -36,7 +36,7 @@ class AlertaInformacoesPagina extends StatelessWidget {
             child: Text(
               message,
               style: const TextStyle(
-                color: CoresAPP.cinzaEscuro,
+                color: CoresApp.cinzaEscuro,
                 fontWeight: FontWeight.w500,
               ),
             ),

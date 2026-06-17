@@ -15,7 +15,7 @@ class BotaoAcaoPrincipal extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.onPressed,
-    this.backgroundColor = CoresAPP.verdeEscuro,
+    this.backgroundColor = CoresApp.verdeEscuro,
     this.height = 50,
     this.borderRadius = 8,
   });

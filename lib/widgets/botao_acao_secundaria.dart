@@ -16,8 +16,8 @@ class BotaoAcaoSecundaria extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.onPressed,
-    this.foregroundColor = CoresAPP.verdeEscuro,
-    this.borderColor = CoresAPP.verdeEscuro,
+    this.foregroundColor = CoresApp.verdeEscuro,
+    this.borderColor = CoresApp.verdeEscuro,
     this.height = 48,
     this.borderRadius = 8,
   });

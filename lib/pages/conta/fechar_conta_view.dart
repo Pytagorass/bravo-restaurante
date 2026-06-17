@@ -2,7 +2,7 @@ import 'package:bravo_restaurante/models/reserva.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
 import 'package:bravo_restaurante/widgets/cores_app.dart';
 import 'package:bravo_restaurante/widgets/consumo_card.dart';
-import 'package:bravo_restaurante/widgets/formulario.dart';
+import 'package:bravo_restaurante/widgets/rotulo_formulario.dart';
 import 'package:bravo_restaurante/widgets/alerta_informacoes_pagina.dart';
 import 'package:bravo_restaurante/widgets/botao_acao_principal.dart';
 import 'package:bravo_restaurante/widgets/reserva_dropdown.dart';
@@ -142,7 +142,7 @@ class _FecharContaViewState extends State<FecharContaView> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: CoresAPP.verdeEscuro,
+                backgroundColor: CoresApp.verdeEscuro,
                 foregroundColor: Colors.white,
               ),
               onPressed: () => Navigator.pop(context, true),
@@ -343,7 +343,7 @@ class _FecharContaViewState extends State<FecharContaView> {
               'Fechar Conta',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: CoresAPP.verdeEscuro,
+            backgroundColor: CoresApp.verdeEscuro,
             foregroundColor: Colors.white,
           ),
           body: SingleChildScrollView(
@@ -358,7 +358,7 @@ class _FecharContaViewState extends State<FecharContaView> {
 
                 const SizedBox(height: 18),
 
-                const Formulario('Selecione a Reserva'),
+                const RotuloFormulario('Selecione a Reserva'),
                 const SizedBox(height: 6),
                 _buildDropdownReserva(reservaVM),
 
@@ -441,7 +441,7 @@ class _FecharContaViewState extends State<FecharContaView> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
-              color: CoresAPP.verdeEscuro,
+              color: CoresApp.verdeEscuro,
             ),
           ),
           Text('Quarto ${reserva.numeroQuarto}'),
@@ -456,7 +456,7 @@ class _FecharContaViewState extends State<FecharContaView> {
               reserva.statusConta,
               style: const TextStyle(
                 fontSize: 12,
-                color: CoresAPP.verdeEscuro,
+                color: CoresApp.verdeEscuro,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -475,7 +475,7 @@ class _FecharContaViewState extends State<FecharContaView> {
           'Resumo da Conta do Cliente',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: CoresAPP.cinzaEscuro,
+            color: CoresApp.cinzaEscuro,
             fontSize: 16,
           ),
         ),
@@ -507,7 +507,7 @@ class _FecharContaViewState extends State<FecharContaView> {
         TotalCard(
           titulo: 'Total Acumulado na Conta do Cliente',
           valor: totalConta,
-          backgroundColor: CoresAPP.verdeEscuro,
+          backgroundColor: CoresApp.verdeEscuro,
           valorFontSize: 26,
         ),
       ],

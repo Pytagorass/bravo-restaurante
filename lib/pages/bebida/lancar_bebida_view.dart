@@ -5,7 +5,7 @@ import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
 import 'package:bravo_restaurante/widgets/cores_app.dart';
-import 'package:bravo_restaurante/widgets/formulario.dart';
+import 'package:bravo_restaurante/widgets/rotulo_formulario.dart';
 import 'package:bravo_restaurante/widgets/alerta_informacoes_pagina.dart';
 import 'package:bravo_restaurante/widgets/botao_acao_principal.dart';
 import 'package:bravo_restaurante/widgets/seletor_quantidade.dart';
@@ -43,8 +43,10 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
   void initState() {
     super.initState();
 
-    // Carrega reservas abertas e produtos assim que a tela termina de abrir.
-    Future.microtask(() {
+    // Carrega reservas abertas e produtos depois do primeiro frame da tela.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
       context.read<ReservaViewModel>().carregarReservasAbertas();
       context.read<ProdutoViewModel>().carregarProdutos();
     });
@@ -156,7 +158,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
               'Lançar Bebida na Conta',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: CoresAPP.verdeEscuro,
+            backgroundColor: CoresApp.verdeEscuro,
             foregroundColor: Colors.white,
           ),
 
@@ -176,21 +178,21 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
 
                         const SizedBox(height: 18),
 
-                        const Formulario('Reserva / Quarto'),
+                        const RotuloFormulario('Reserva / Quarto'),
                         const SizedBox(height: 6),
                         _buildDropdownReserva(reservaVM),
 
                         const SizedBox(height: 18),
 
-                        const Formulario('Bebida'),
+                        const RotuloFormulario('Bebida'),
                         const SizedBox(height: 6),
                         _buildDropdownBebida(bebidas),
 
                         const SizedBox(height: 18),
 
-                        const Formulario('Quantidade'),
+                        const RotuloFormulario('Quantidade'),
                         const SizedBox(height: 6),
-                        SeletorQuantide(
+                        SeletorQuantidade(
                           quantidade: quantidade,
                           habilitado: bebidaSelecionada != null,
                           aoAumentar: _aumentarQuantidade,
@@ -199,7 +201,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
 
                         const SizedBox(height: 18),
 
-                        const Formulario('Valor Unitário'),
+                        const RotuloFormulario('Valor Unitário'),
                         const SizedBox(height: 6),
                         _buildValorUnitario(),
 

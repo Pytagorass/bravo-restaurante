@@ -6,7 +6,7 @@ import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';
 import 'package:bravo_restaurante/widgets/cores_app.dart';
-import 'package:bravo_restaurante/widgets/formulario.dart';
+import 'package:bravo_restaurante/widgets/rotulo_formulario.dart';
 import 'package:bravo_restaurante/widgets/alerta_informacoes_pagina.dart';
 import 'package:bravo_restaurante/widgets/botao_acao_principal.dart';
 import 'package:bravo_restaurante/widgets/seletor_quantidade.dart';
@@ -198,7 +198,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: CoresAPP.verdeEscuro,
+                    backgroundColor: CoresApp.verdeEscuro,
                     foregroundColor: Colors.white,
                   ),
                   onPressed: () => Navigator.pop(context, novaQuantidade),
@@ -315,7 +315,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
               'Registrar Pedido',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            backgroundColor: CoresAPP.verdeEscuro,
+            backgroundColor: CoresApp.verdeEscuro,
             foregroundColor: Colors.white,
           ),
           body: carregando
@@ -335,21 +335,21 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
 
                         const SizedBox(height: 18),
 
-                        const Formulario('Reserva / Quarto'),
+                        const RotuloFormulario('Reserva / Quarto'),
                         const SizedBox(height: 6),
                         _buildDropdownReserva(reservaVM),
 
                         const SizedBox(height: 18),
 
-                        const Formulario('Produto'),
+                        const RotuloFormulario('Produto'),
                         const SizedBox(height: 6),
                         _buildDropdownProduto(produtoVM),
 
                         const SizedBox(height: 18),
 
-                        const Formulario('Quantidade'),
+                        const RotuloFormulario('Quantidade'),
                         const SizedBox(height: 6),
-                        SeletorQuantide(
+                        SeletorQuantidade(
                           quantidade: quantidade,
                           habilitado: produtoSelecionado != null,
                           aoAumentar: _aumentarQuantidade,
@@ -358,7 +358,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
 
                         const SizedBox(height: 18),
 
-                        const Formulario('Observação'),
+                        const RotuloFormulario('Observação'),
                         const SizedBox(height: 6),
                         _buildObservacaoField(),
 
@@ -374,7 +374,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: CoresAPP.cinzaEscuro,
+                              color: CoresApp.cinzaEscuro,
                             ),
                           ),
 
@@ -412,7 +412,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                                         'R\$ ${item.subtotal.toStringAsFixed(2)}',
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: CoresAPP.verdeEscuro,
+                                          color: CoresApp.verdeEscuro,
                                         ),
                                       ),
                                       IconButton(
@@ -422,7 +422,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                                             : () =>
                                                   _editarQuantidadeItem(index),
                                         icon: const Icon(Icons.edit_outlined),
-                                        color: CoresAPP.verdeEscuro,
+                                        color: CoresApp.verdeEscuro,
                                       ),
                                       IconButton(
                                         tooltip: 'Cancelar item',
@@ -445,7 +445,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
                             'Use editar para alterar a quantidade ou cancelar para remover um item antes de confirmar.',
                             style: TextStyle(
                               fontSize: 12,
-                              color: CoresAPP.cinzaEscuro,
+                              color: CoresApp.cinzaEscuro,
                             ),
                           ),
 
@@ -588,7 +588,7 @@ class _RegistrarPedidoViewState extends State<RegistrarPedidoView> {
       label: 'Adicionar Item',
       icon: Icons.add,
       onPressed: habilitado ? _adicionarItem : null,
-      backgroundColor: CoresAPP.verdeMedio,
+      backgroundColor: CoresApp.verdeMedio,
     );
   }
 

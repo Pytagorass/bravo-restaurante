@@ -12,7 +12,7 @@ class TotalCard extends StatelessWidget {
     super.key,
     required this.titulo,
     required this.valor,
-    this.backgroundColor = CoresAPP.verdeMedio,
+    this.backgroundColor = CoresApp.verdeMedio,
     this.valorFontSize = 24,
   });
 
