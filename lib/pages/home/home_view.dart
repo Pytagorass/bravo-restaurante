@@ -149,14 +149,14 @@ class _HomeViewState extends State<HomeView> {
           ),
           ListTile(
             leading: const Icon(Icons.receipt_long),
-            title: const Text('Registrar Pedido'),
+            title: const Text('Restaurante'),
             onTap: () {
               _fecharDrawerEAbrir(_abrirRegistrarPedido);
             },
           ),
           ListTile(
             leading: const Icon(Icons.local_bar),
-            title: const Text('Lançar Bebida'),
+            title: const Text('Bar'),
             onTap: () {
               _fecharDrawerEAbrir(_abrirLancarBebida);
             },

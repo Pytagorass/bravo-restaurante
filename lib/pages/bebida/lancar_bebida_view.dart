@@ -155,7 +155,7 @@ class _LancarBebidaViewState extends State<LancarBebidaView> {
           backgroundColor: Colors.white,
           appBar: AppBar(
             title: const Text(
-              'Lançar Bebida na Conta',
+              'Lançar Bebida',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             backgroundColor: CoresApp.verdeEscuro,
