@@ -1,5 +1,5 @@
 import 'package:bravo_restaurante/mvvm/conta_consumo_viewmodel.dart';
-import 'package:bravo_restaurante/mvvm/lib/mvvm/bebida_viewmodel.dart';
+import 'package:bravo_restaurante/mvvm/bebida_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/pedido_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
@@ -45,9 +45,6 @@ Future<void> main() async {
     ),
   );
 }
-
-// Atalho global para o cliente Supabase ja inicializado no main().
-final supabase = Supabase.instance.client;
 
 // Widget raiz do aplicativo: define tema, titulo e tela inicial.
 class BravoApp extends StatelessWidget {

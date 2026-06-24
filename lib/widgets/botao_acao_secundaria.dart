@@ -18,7 +18,7 @@ class BotaoAcaoSecundaria extends StatelessWidget {
     required this.onPressed,
     this.foregroundColor = CoresApp.verdeEscuro,
     this.borderColor = CoresApp.verdeEscuro,
-    this.height = 48,
+    this.height = 56,
     this.borderRadius = 8,
   });
 
@@ -29,8 +29,11 @@ class BotaoAcaoSecundaria extends StatelessWidget {
       height: height,
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon),
-        label: Text(label),
+        icon: Icon(icon, size: 24),
+        label: Text(
+          label,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
         style: OutlinedButton.styleFrom(
           foregroundColor: foregroundColor,
           side: BorderSide(color: borderColor),

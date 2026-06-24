@@ -34,16 +34,25 @@ class ContaHospedeView extends StatefulWidget {
 class _ContaHospedeViewState extends State<ContaHospedeView> {
   // Reserva usada para buscar e exibir a conta de consumo.
   Reserva? reservaSelecionada;
+  late final ContaConsumoViewModel _contaVM;
 
   @override
   void initState() {
     super.initState();
+    _contaVM = context.read<ContaConsumoViewModel>();
 
     // A tela sempre começa listando as reservas abertas disponíveis.
     Future.microtask(() {
       // ignore: use_build_context_synchronously
       context.read<ReservaViewModel>().carregarReservasAbertas();
     });
+  }
+
+  @override
+  void dispose() {
+    // Garante que a próxima abertura da tela não herde a conta selecionada.
+    _contaVM.limpar();
+    super.dispose();
   }
 
   Future<void> _selecionarReserva(Reserva? reserva) async {
@@ -53,11 +62,11 @@ class _ContaHospedeViewState extends State<ContaHospedeView> {
     });
 
     if (reserva == null) {
-      context.read<ContaConsumoViewModel>().limpar();
+      _contaVM.limpar();
       return;
     }
 
-    await context.read<ContaConsumoViewModel>().carregarContaDaReserva(reserva);
+    await _contaVM.carregarContaDaReserva(reserva);
   }
 
   @override

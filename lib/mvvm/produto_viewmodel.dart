@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:bravo_restaurante/models/produto.dart';
+import 'package:bravo_restaurante/services/produto_service.dart';
+import 'package:flutter/material.dart';
 
 class ProdutoViewModel extends ChangeNotifier {
-  // Cliente Supabase usado para buscar produtos cadastrados no banco.
-  final SupabaseClient _supabase = Supabase.instance.client;
+  // Service responsavel por buscar produtos cadastrados no banco.
+  final ProdutoService _produtoService = ProdutoService();
 
   // Estados consumidos pelas telas enquanto os produtos sao carregados.
   bool isLoading = false;
@@ -21,16 +21,7 @@ class ProdutoViewModel extends ChangeNotifier {
 
     try {
       // Consulta apenas produtos ativos e ordena pelo nome exibido nos dropdowns.
-      final response = await _supabase
-          .from('produto')
-          .select()
-          .eq('ativo', true)
-          .order('nome_produto', ascending: true);
-
-      // Converte cada registro do banco para o model Produto usado no app.
-      produtos = response
-          .map<Produto>((item) => Produto.fromMap(item))
-          .toList();
+      produtos = await _produtoService.carregarProdutosAtivos();
 
       debugPrint('Produtos ativos carregados: ${produtos.length}');
 

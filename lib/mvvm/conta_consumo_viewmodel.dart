@@ -1,16 +1,22 @@
 import 'package:bravo_restaurante/models/conta_consumo.dart';
 import 'package:bravo_restaurante/models/reserva.dart';
+import 'package:bravo_restaurante/models/resumo_fechamento_conta.dart';
+import 'package:bravo_restaurante/services/conta_consumo_service.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ContaConsumoViewModel extends ChangeNotifier {
-  // Cliente Supabase usado para consultar conta, pedidos e bebidas da reserva.
-  final SupabaseClient _supabase = Supabase.instance.client;
+  // Service responsavel por consultar conta, pedidos e bebidas da reserva.
+  final ContaConsumoService _contaConsumoService = ContaConsumoService();
 
   // Estados observados pela tela de conta do hospede.
   bool isLoading = false;
   String? mensagemErro;
   ContaConsumo? conta;
+
+  // Estados observados pela tela de fechamento da conta.
+  bool carregandoResumoFechamento = false;
+  String? mensagemErroFechamento;
+  ResumoFechamentoConta? resumoFechamento;
 
   Future<void> carregarContaDaReserva(Reserva reserva) async {
     // Limpa dados antigos antes de carregar a conta da nova reserva selecionada.
@@ -20,73 +26,14 @@ class ContaConsumoViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // A tela parte da reserva selecionada e localiza a conta unica dela.
-      final contaMap = await _supabase
-          .from('conta_consumo')
-          .select()
-          .eq('id_reserva', reserva.idReserva)
-          .maybeSingle();
+      conta = await _contaConsumoService.carregarContaDaReserva(reserva);
 
-      if (contaMap == null) {
+      if (conta == null) {
         mensagemErro = 'Nenhuma conta de consumo encontrada para esta reserva.';
         isLoading = false;
         notifyListeners();
         return;
       }
-
-      final idConta = contaMap['id_conta'] as String;
-
-      // Busca pedidos com os itens e produtos ja relacionados pelo PostgREST.
-      final pedidosResponse = await _supabase
-          .from('pedido')
-          .select('''
-            id_pedido,
-            status_pedido,
-            observacao,
-            total_pedido,
-            created_at,
-            item_pedido (
-              quantidade,
-              valor_unitario,
-              subtotal,
-              produto:id_produto (
-                nome_produto
-              )
-            )
-          ''')
-          .eq('id_conta', idConta)
-          .order('created_at', ascending: false);
-
-      // Bebidas sao lancamentos diretos na conta, separados dos pedidos.
-      final bebidasResponse = await _supabase
-          .from('bebida_lancada')
-          .select('''
-            quantidade,
-            valor_unitario,
-            subtotal,
-            observacao,
-            created_at,
-            produto:id_produto (
-              nome_produto
-            )
-          ''')
-          .eq('id_conta', idConta)
-          .order('created_at', ascending: false);
-
-      final pedidos = pedidosResponse
-          .map<PedidoConta>((item) => PedidoConta.fromMap(item))
-          .toList();
-
-      final bebidas = bebidasResponse
-          .map<BebidaConta>((item) => BebidaConta.fromMap(item))
-          .toList();
-
-      // Junta os dados da conta, pedidos e bebidas em um unico model para a tela.
-      conta = ContaConsumo.fromMap(
-        contaMap,
-        pedidos: pedidos,
-        bebidas: bebidas,
-      );
 
       isLoading = false;
       notifyListeners();
@@ -102,6 +49,52 @@ class ContaConsumoViewModel extends ChangeNotifier {
     // Remove a conta atual quando nenhuma reserva esta selecionada.
     conta = null;
     mensagemErro = null;
+    notifyListeners();
+  }
+
+  Future<void> carregarResumoFechamento(Reserva reserva) async {
+    carregandoResumoFechamento = true;
+    mensagemErroFechamento = null;
+    resumoFechamento = null;
+    notifyListeners();
+
+    try {
+      resumoFechamento = await _contaConsumoService.carregarResumoFechamento(
+        reserva,
+      );
+
+      carregandoResumoFechamento = false;
+      notifyListeners();
+    } catch (e) {
+      mensagemErroFechamento = 'Erro ao carregar conta: $e';
+      carregandoResumoFechamento = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> fecharContaDaReserva(Reserva reserva) async {
+    mensagemErroFechamento = null;
+    notifyListeners();
+
+    try {
+      await _contaConsumoService.fecharContaDaReserva(
+        idConta: reserva.idConta,
+        idReserva: reserva.idReserva,
+      );
+
+      limparResumoFechamento();
+      return true;
+    } catch (e) {
+      mensagemErroFechamento = 'Erro ao fechar conta: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  void limparResumoFechamento() {
+    resumoFechamento = null;
+    mensagemErroFechamento = null;
+    carregandoResumoFechamento = false;
     notifyListeners();
   }
 }

@@ -16,7 +16,7 @@ class BotaoAcaoPrincipal extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     this.backgroundColor = CoresApp.verdeEscuro,
-    this.height = 50,
+    this.height = 58,
     this.borderRadius = 8,
   });
 
@@ -27,10 +27,11 @@ class BotaoAcaoPrincipal extends StatelessWidget {
       height: height,
       child: ElevatedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, color: Colors.white),
+        icon: Icon(icon, color: Colors.white, size: 24),
         label: Text(
           label,
           style: const TextStyle(
+            fontSize: 16,
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),

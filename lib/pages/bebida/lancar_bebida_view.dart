@@ -1,6 +1,6 @@
 import 'package:bravo_restaurante/models/produto.dart';
 import 'package:bravo_restaurante/models/reserva.dart';
-import 'package:bravo_restaurante/mvvm/lib/mvvm/bebida_viewmodel.dart';
+import 'package:bravo_restaurante/mvvm/bebida_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/produto_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/reserva_viewmodel.dart';
 import 'package:bravo_restaurante/mvvm/usuario_viewmodel.dart';

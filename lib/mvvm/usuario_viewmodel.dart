@@ -1,10 +1,10 @@
 import 'package:bravo_restaurante/models/usuario.dart';
+import 'package:bravo_restaurante/services/usuario_service.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UsuarioViewModel extends ChangeNotifier {
-  // Cliente Supabase reutilizado para consultar a tabela usuario.
-  final SupabaseClient _supabase = Supabase.instance.client;
+  // Service responsavel pelas consultas de usuario no Supabase.
+  final UsuarioService _usuarioService = UsuarioService();
 
   // Estados observados pela tela de login para carregar e exibir erro.
   bool isLoading = false;
@@ -24,13 +24,9 @@ class UsuarioViewModel extends ChangeNotifier {
     try {
       // Busca o usuário pelo e-mail sem diferenciar maiúsculas/minúsculas.
       // A senha e o status ativo são validados depois para mensagens mais claras.
-      final response = await _supabase
-          .from('usuario')
-          .select()
-          .ilike('email_usuario', email)
-          .maybeSingle();
+      final usuario = await _usuarioService.buscarPorEmail(email);
 
-      if (response == null) {
+      if (usuario == null) {
         debugPrint('Login: nenhum usuario retornado para o e-mail informado.');
         mensagemErro = 'E-mail ou senha invalidos.';
         isLoading = false;
@@ -38,7 +34,6 @@ class UsuarioViewModel extends ChangeNotifier {
         return false;
       }
 
-      final usuario = Usuario.fromMap(response);
       // Log de diagnóstico sem expor a senha digitada no console.
       debugPrint(
         'Login: usuario encontrado. ativo=${usuario.ativo}, senhaConfere=${usuario.senha == senha}',

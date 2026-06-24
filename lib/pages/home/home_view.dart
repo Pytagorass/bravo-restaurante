@@ -98,6 +98,9 @@ class _HomeViewState extends State<HomeView> {
         currentIndex: _selectedIndex,
         selectedItemColor: CoresApp.verdeEscuro,
         unselectedItemColor: CoresApp.cinzaEscuro.withValues(alpha: 0.6),
+        iconSize: 26,
+        selectedFontSize: 13,
+        unselectedFontSize: 12,
         showUnselectedLabels: true,
         onTap: (index) {
           // Atualiza o item selecionado e abre a tela ligada ao indice tocado.
@@ -235,20 +238,27 @@ class _AcessosRapidosCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = MediaQuery.sizeOf(context).shortestSide >= 600;
+    final paddingCard = isTablet ? 22.0 : 16.0;
+    final espacamento = isTablet ? 16.0 : 12.0;
+
     // Card com botoes rapidos para acessar os fluxos principais.
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(paddingCard),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Acessos rápidos',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: isTablet ? 18 : 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: espacamento),
             Row(
               children: [
                 Expanded(
@@ -258,7 +268,7 @@ class _AcessosRapidosCard extends StatelessWidget {
                     onTap: abrirRegistrarPedido,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: espacamento),
                 Expanded(
                   child: _QuickButton(
                     label: 'Bar',
@@ -268,7 +278,7 @@ class _AcessosRapidosCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: espacamento),
             Row(
               children: [
                 Expanded(
@@ -278,7 +288,7 @@ class _AcessosRapidosCard extends StatelessWidget {
                     onTap: abrirContaHospede,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: espacamento),
                 Expanded(
                   child: _QuickButton(
                     label: 'Fechar Conta',
@@ -308,21 +318,28 @@ class _QuickButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = MediaQuery.sizeOf(context).shortestSide >= 600;
+
     // Botao reutilizavel dos atalhos da Home.
     return OutlinedButton.icon(
       onPressed: onTap,
-      icon: Icon(icon, color: CoresApp.verdeMedio),
+      icon: Icon(icon, color: CoresApp.verdeMedio, size: isTablet ? 24 : 20),
       label: Text(
         label,
         textAlign: TextAlign.center,
-        style: const TextStyle(
+        style: TextStyle(
+          fontSize: isTablet ? 15 : 13,
           color: CoresApp.verdeEscuro,
           fontWeight: FontWeight.w600,
         ),
       ),
       style: OutlinedButton.styleFrom(
+        minimumSize: Size.fromHeight(isTablet ? 58 : 48),
         side: BorderSide(color: CoresApp.verdeMedio.withValues(alpha: 0.6)),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        padding: EdgeInsets.symmetric(
+          vertical: isTablet ? 18 : 14,
+          horizontal: isTablet ? 16 : 8,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
